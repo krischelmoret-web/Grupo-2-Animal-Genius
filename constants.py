@@ -1,1 +1,42 @@
+from dataclasses import dataclass
+from pathlib import Path
+
+@dataclass(frozen=True)
+class Constantes():
+
+    #Rutas del sistema 
+    BASE_DIR: Path = Path(__file__).resolve().parent
+    ASSETS_DIR: Path = BASE_DIR / "assets"
+    IMAGES_DIR: Path = ASSETS_DIR / "images"
+    SOUNDS_DIR: Path = ASSETS_DIR / "sounds"
+    FONTS_DIR: Path = ASSETS_DIR / "fonts"
+    BACKGROUNDS_DIR: Path = ASSETS_DIR / "backgrounds"
+
+    #Ventana y rendimiento
+    TITULO_JUEGO: str = "¿Quien es el animal?"
+    ANCHO_PANTALLA: int = 1280
+    ALTO_PANTALLA: int = 720
+    FPS: int = 60
+
+    #Colores
+    COLOR_FONDO: tuple = (245, 247, 248)
+    COLOR_BOTON: tuple = (76, 175, 80)
+    COLOR_BOTON_HOVER: tuple = (102, 187, 106)
+    COLOR_TEXTO: tuple = (255, 255, 255)
+    COLOR_TEXTO_DARK: tuple = (44, 62, 80)
+
+    #Posiciones y dimensiones
+    ANCHO_IMAGEN: int = 400
+    ALTO_IMAGEN: int = 300
+    POS_IMAGEN_Y: int = 150
+
+    ANCHO_BOTON: int = 300
+    ALTO_BOTON: int = 80
+    POS_Y_BOTONES: int = 520
+    POS_X_BOTON_IZQ: int = 280
+    POS_X_BOTON_DER: int = 700
+
+const = Constantes()
+
+
 
