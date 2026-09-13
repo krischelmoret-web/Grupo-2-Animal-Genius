@@ -26,8 +26,8 @@ class Constantes():
     COLOR_TEXTO_DARK: tuple = (44, 62, 80)
 
     #Posiciones y dimensiones
-    ANCHO_IMAGEN: int = 400
-    ALTO_IMAGEN: int = 300
+    ANCHO_IMAGEN: int = 200
+    ALTO_IMAGEN: int = 200
     POS_IMAGEN_Y: int = 150
 
     ANCHO_BOTON: int = 300
@@ -37,6 +37,5 @@ class Constantes():
     POS_X_BOTON_DER: int = 700
 
 const = Constantes()
-
 
 
