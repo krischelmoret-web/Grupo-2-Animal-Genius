@@ -105,7 +105,7 @@ class MotorJuego:
     def _avanzar_siguiente_carta(self) -> None:
             self._indice_actual += 1
             self._mensaje_retroalimentacion = ""
-            self._visual._ultima_carta_procesada = None 
+            self._visual._ultima_carta_procesada = None  
     
             if self._indice_actual >= self._album.total_cartas():
                 self._indice_actual = 0
@@ -125,51 +125,4 @@ class MotorJuego:
                 self._puntuacion,
                 self._mensaje_retroalimentacion,
                 revelada=self._revelando_carta,
-            )                self._ejecutando = False
-
-            elif evento.type == pygame.KEYDOWN:
-                if evento.key == pygame.K_ESCAPE:
-                    self._ejecutando = False
-
-            elif evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
-                self._evaluar_clic(evento.pos)
-
-    def _evaluar_clic(self, pos_mouse: tuple[int, int]) -> None:
-        opcion_seleccionada = self._visual.obtener_opcion_clic(pos_mouse)
-
-        if opcion_seleccionada:
-            carta_actual = self._album.obtener_carta(self._indice_actual)
-
-            if carta_actual and opcion_seleccionada == carta_actual.respuesta_correcta:
-                self._puntuacion += 10
-                self._mensaje_retroalimentacion = obtener_mensaje_aliento()
-            else:
-                self._mensaje_retroalimentacion = "Inténtalo de nuevo"
-
-            self._tiempo_mensaje = 2.0
-            self._avanzar_siguiente_carta()
-
-    def _avanzar_siguiente_carta(self) -> None:
-        self._indice_actual += 1
-        if self._indice_actual >= self._album.total_cartas():
-            self._indice_actual = 0
-
-    def _actualizar(self, dt: float) -> None:
-        if self._tiempo_mensaje > 0:
-            self._tiempo_mensaje -= dt
-            if self._tiempo_mensaje <= 0:
-                self._mensaje_retroalimentacion = ""  
-                self._tiempo_mensaje = 0.0
-
-    def _dibujar(self) -> None:
-        self._pantalla.fill(const.COLOR_FONDO)
-        carta_actual = self._album.obtener_carta(self._indice_actual)
-
-        self._visual.dibujar_interfaz(
-            self._pantalla,
-            carta_actual,
-            self._puntuacion,
-            self._mensaje_retroalimentacion,
-        )
-
-
+            )
