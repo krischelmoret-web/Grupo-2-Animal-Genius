@@ -11,12 +11,13 @@ class RenderizadorJuego:
         self.fuente_texto = pygame.font.Font(str(ruta_fuente), 24)
         self.fuente_titulo = pygame.font.Font(str(ruta_fuente), 32)
 
-        # Menú Principal
+        # Menú Principal ---
         self.rect_btn_jugar = pygame.Rect(
             const.ANCHO_PANTALLA // 2 - 150, 400, 300, 70
         )
+        self.rect_btn_musica = pygame.Rect(const.ANCHO_PANTALLA // 2 - 150, 490, 300, 50)
 
-        #Menú de Zonas
+        # Menú de Zonas / Biomas 
         centro_x, centro_y = const.ANCHO_PANTALLA // 2, const.ALTO_PANTALLA // 2 + 20
         radio_orbita = 220
         radio_circulo_imagen = 75
@@ -38,7 +39,7 @@ class RenderizadorJuego:
                 "radio": radio_circulo_imagen,
             }
 
-        # Menú de modos
+        # Menú de Modos de Juego 
         self.rects_modos = {
             "normal": pygame.Rect(const.ANCHO_PANTALLA // 2 - 175, 250, 350, 60),
             "preguntas": pygame.Rect(const.ANCHO_PANTALLA // 2 - 175, 330, 350, 60),
@@ -47,6 +48,7 @@ class RenderizadorJuego:
 
         self._bloques_rasca = []
 
+        # Interfaz de Juego 
         ancho_b, alto_b = 350, 50
         espacio_x = 20  
         ancho_total_fila = (ancho_b * 2) + espacio_x
@@ -64,7 +66,7 @@ class RenderizadorJuego:
         self._opciones_actuales = ["", "", "", ""]
         self._ultima_carta_procesada = None  
 
-        # Ronda Sí / No 
+        # Ronda Sí / No ---
         self.rect_btn_si = pygame.Rect(
             const.ANCHO_PANTALLA // 2 - 220, 480, 180, 70
         )
@@ -72,8 +74,13 @@ class RenderizadorJuego:
             const.ANCHO_PANTALLA // 2 + 40, 480, 180, 70
         )
 
-    #PANTALLA 1: MENÚ PRINCIPAL
+        # Pantalla de Resultados ---
+        self.rect_btn_reiniciar = pygame.Rect(
+            const.ANCHO_PANTALLA // 2 - 160, 480, 320, 60
+        )
 
+    #PANTALLA 1: MENÚ PRINCIPAL
+    
     def dibujar_menu_principal(self, pantalla) -> None:
         titulo = self.fuente_titulo.render(
             "Juego Educativo: Identifica el Animal", True, const.COLOR_TEXTO_DARK
@@ -91,7 +98,22 @@ class RenderizadorJuego:
     def obtener_clic_menu_principal(self, pos_mouse: tuple[int, int]) -> bool:
         return self.rect_btn_jugar.collidepoint(pos_mouse)
 
-    #PANTALLA 2: MENÚ DE ZONAS 
+    def dibujar_boton_musica(self, pantalla, musica_activa: bool) -> None:
+
+        color_fondo = (76, 175, 80) if musica_activa else (180, 180, 180)
+        pygame.draw.rect(pantalla, color_fondo, self.rect_btn_musica, border_radius=12)
+        pygame.draw.rect(pantalla, (40, 150, 220), self.rect_btn_musica, width=2, border_radius=12)
+        
+        texto = "Música: Activada" if musica_activa else "Música: Silenciada"
+        txt_musica = self.fuente_texto.render(texto, True, (255, 255, 255))
+        m_rect = txt_musica.get_rect(center=self.rect_btn_musica.center)
+        pantalla.blit(txt_musica, m_rect)
+
+    def obtener_clic_boton_musica(self, pos_mouse: tuple[int, int]) -> bool:
+        """Devuelve True si se hizo clic en el botón de música."""
+        return self.rect_btn_musica.collidepoint(pos_mouse)
+
+    # PANTALLA 2: MENÚ DE ZONAS 
 
     def dibujar_menu_zonas(self, pantalla) -> None:
         titulo = self.fuente_titulo.render(
@@ -217,11 +239,11 @@ class RenderizadorJuego:
        alto_img = 310
        centro_img_x = const.ANCHO_PANTALLA // 2
        centro_img_y = 225
-        
+       
        x_inicio = centro_img_x - (ancho_img // 2)
        y_inicio = centro_img_y - (alto_img // 2)
        tamanio_bloque = 12
-        
+       
        for x in range(x_inicio, x_inicio + ancho_img, tamanio_bloque):
             for y in range(y_inicio, y_inicio + alto_img, tamanio_bloque):
                 self._bloques_rasca.append(
@@ -263,7 +285,7 @@ class RenderizadorJuego:
                 pos_x = centro_img_x - (ancho_img // 2)
                 pos_y = centro_img_y - (alto_img // 2)
                         
-                pantalla.blit(imagen_escalada, (pos_x, pos_y))                        
+                pantalla.blit(imagen_escalada, (pos_x, pos_y))                
 
 
                 if modo == "rasca":      
@@ -316,7 +338,7 @@ class RenderizadorJuego:
                 return self._opciones_actuales[i]
         return None
 
-    #PANTALLA 5: RONDA SÍ / NO 
+    # PANTALLA 5: RONDA SÍ / NO 
 
     def dibujar_ronda_sino(
         self,
@@ -368,6 +390,58 @@ class RenderizadorJuego:
         if self.rect_btn_no.collidepoint(pos_mouse):
             return False
         return None
+
+    # PANTALLA 6: RESULTADOS FINALES 
+
+    def dibujar_pantalla_resultados(
+        self, pantalla, puntuacion_final: int, total_posible: int, aciertos: int, fallos: int
+    ) -> None:
+        titulo = self.fuente_titulo.render(
+            "¡Juego Terminado!", True, const.COLOR_TEXTO_DARK
+        )
+        t_rect = titulo.get_rect(center=(const.ANCHO_PANTALLA // 2, 140))
+        pantalla.blit(titulo, t_rect)
+
+        # Puntuación final
+        texto_puntos = f"Puntuación Final: {puntuacion_final} / {total_posible}"
+        txt_score = self.fuente_texto.render(texto_puntos, True, (40, 50, 120))
+        s_rect = txt_score.get_rect(center=(const.ANCHO_PANTALLA // 2, 210))
+        pantalla.blit(txt_score, s_rect)
+
+        # Aciertos y fallos
+        txt_aciertos = self.fuente_texto.render(f"Aciertos: {aciertos}", True, (76, 175, 80))
+        a_rect = txt_aciertos.get_rect(center=(const.ANCHO_PANTALLA // 2, 270))
+        pantalla.blit(txt_aciertos, a_rect)
+
+        txt_fallos = self.fuente_texto.render(f"Fallos: {fallos}", True, (244, 67, 54))
+        f_rect = txt_fallos.get_rect(center=(const.ANCHO_PANTALLA // 2, 320))
+        pantalla.blit(txt_fallos, f_rect)
+
+        # Mensaje dinamico segun el rendimiento
+        if aciertos >= fallos:
+            mensaje = "¡Excelente trabajo! Has demostrado un gran conocimiento."
+            color_msg = (46, 125, 50)  # Verde oscuro de felicitación
+        else:
+            mensaje = "¡Buen intento! Sigue practicando para mejorar la próxima."
+            color_msg = (211, 47, 47)  # Rojo de aliento
+
+        txt_msg = self.fuente_texto.render(mensaje, True, color_msg)
+        m_rect = txt_msg.get_rect(center=(const.ANCHO_PANTALLA // 2, 390))
+        pantalla.blit(txt_msg, m_rect)
+
+        # Botón para volver al menú
+        pygame.draw.rect(
+            pantalla, const.COLOR_BOTON, self.rect_btn_reiniciar, border_radius=12
+        )
+        pygame.draw.rect(
+            pantalla, (40, 150, 220), self.rect_btn_reiniciar, width=2, border_radius=12
+        )
+        txt_menu = self.fuente_texto.render("Volver al Menú", True, const.COLOR_TEXTO)
+        menu_rect = txt_menu.get_rect(center=self.rect_btn_reiniciar.center)
+        pantalla.blit(txt_menu, menu_rect)
+
+    def obtener_clic_resultados(self, pos_mouse: tuple[int, int]) -> bool:
+        return self.rect_btn_reiniciar.collidepoint(pos_mouse)
 
 
     def dibujar_indicadores_progreso(
