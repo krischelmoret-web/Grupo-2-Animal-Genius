@@ -417,7 +417,7 @@ class RenderizadorJuego:
         f_rect = txt_fallos.get_rect(center=(const.ANCHO_PANTALLA // 2, 320))
         pantalla.blit(txt_fallos, f_rect)
 
-        # Mensaje dinamico segun el rendimiento
+        # Mensaje dinamico segun la cantidad de aciertos o fallos
         if aciertos >= fallos:
             mensaje = "¡Excelente trabajo! Has demostrado un gran conocimiento."
             color_msg = (46, 125, 50)  # Verde oscuro de felicitación
