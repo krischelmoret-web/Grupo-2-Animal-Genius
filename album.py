@@ -345,7 +345,7 @@ class AlbumCartas:
             ),
         ]
 
-        # Lista que se usará en la partida actual según la zona elegida
+        # Lista que se usará en la partida según la zona elegida
         self._cartas_filtradas = []
         self._preguntas_sino_filtradas = []
 
@@ -355,12 +355,14 @@ class AlbumCartas:
             carta for carta in self._cartas_totales if carta.zona == zona
         ]
         random.shuffle(self._cartas_filtradas)
+        self._cartas_filtradas = self._cartas_filtradas[:5]
 
     def filtrar_preguntas_sino(self, zona: str) -> None:
         self._preguntas_sino_filtradas = [
             p for p in self._preguntas_sino_totales if p.zona == zona
         ]
         random.shuffle(self._preguntas_sino_filtradas)
+        self._preguntas_sino_filtradas = self._preguntas_sino_filtradas[:5]
 
     def obtener_pregunta_sino(self, indice: int) -> PreguntaSiNo | None:
         if 0 <= indice < len(self._preguntas_sino_filtradas):
