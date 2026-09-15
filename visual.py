@@ -6,14 +6,17 @@ from constants import const
 class RenderizadorJuego:
 
     def __init__(self):
+
         ruta_fuente = const.FONTS_DIR / "OpenSans.ttf"
         self.fuente_texto = pygame.font.Font(str(ruta_fuente), 24)
         self.fuente_titulo = pygame.font.Font(str(ruta_fuente), 32)
 
+        # Menú Principal
         self.rect_btn_jugar = pygame.Rect(
             const.ANCHO_PANTALLA // 2 - 150, 400, 300, 70
         )
 
+        #Menú de Zonas
         centro_x, centro_y = const.ANCHO_PANTALLA // 2, const.ALTO_PANTALLA // 2 + 20
         radio_orbita = 220
         radio_circulo_imagen = 75
@@ -35,6 +38,7 @@ class RenderizadorJuego:
                 "radio": radio_circulo_imagen,
             }
 
+        # Menú de modos
         self.rects_modos = {
             "normal": pygame.Rect(const.ANCHO_PANTALLA // 2 - 175, 250, 350, 60),
             "preguntas": pygame.Rect(const.ANCHO_PANTALLA // 2 - 175, 330, 350, 60),
@@ -44,7 +48,7 @@ class RenderizadorJuego:
         self._bloques_rasca = []
 
         ancho_b, alto_b = 350, 50
-        espacio_x = 20  # Separación horizontal entre los dos botones de una fila
+        espacio_x = 20  
         ancho_total_fila = (ancho_b * 2) + espacio_x
         inicio_x = (const.ANCHO_PANTALLA - ancho_total_fila) // 2
 
@@ -58,9 +62,9 @@ class RenderizadorJuego:
             pygame.Rect(x_der, y_abajo, ancho_b, alto_b),
         ]
         self._opciones_actuales = ["", "", "", ""]
-        self._ultima_carta_procesada = None 
+        self._ultima_carta_procesada = None  
 
-        # --- 4. Geometría de la Ronda Sí / No ---
+        # Ronda Sí / No 
         self.rect_btn_si = pygame.Rect(
             const.ANCHO_PANTALLA // 2 - 220, 480, 180, 70
         )
@@ -68,6 +72,7 @@ class RenderizadorJuego:
             const.ANCHO_PANTALLA // 2 + 40, 480, 180, 70
         )
 
+    #PANTALLA 1: MENÚ PRINCIPAL
 
     def dibujar_menu_principal(self, pantalla) -> None:
         titulo = self.fuente_titulo.render(
@@ -86,6 +91,7 @@ class RenderizadorJuego:
     def obtener_clic_menu_principal(self, pos_mouse: tuple[int, int]) -> bool:
         return self.rect_btn_jugar.collidepoint(pos_mouse)
 
+    #PANTALLA 2: MENÚ DE ZONAS 
 
     def dibujar_menu_zonas(self, pantalla) -> None:
         titulo = self.fuente_titulo.render(
@@ -175,6 +181,7 @@ class RenderizadorJuego:
                 return zona
         return None
 
+    # PANTALLA 3: MENÚ DE MODOS DE JUEGO 
 
     def dibujar_menu_modos(self, pantalla) -> None:
         titulo = self.fuente_titulo.render(
@@ -205,22 +212,21 @@ class RenderizadorJuego:
 
 
     def _inicializar_grilla_rasca(self) -> None:
-        self._bloques_rasca = []
-        radio_img = 95
-        centro_img_x = const.ANCHO_PANTALLA // 2
-        centro_img_y = 230
+       self._bloques_rasca = []
+       ancho_img = 440
+       alto_img = 310
+       centro_img_x = const.ANCHO_PANTALLA // 2
+       centro_img_y = 225
         
-        x_inicio = centro_img_x - radio_img
-        y_inicio = centro_img_y - radio_img
-        tamano_cuadricula = radio_img * 2
-        tamanio_bloque = 12
+       x_inicio = centro_img_x - (ancho_img // 2)
+       y_inicio = centro_img_y - (alto_img // 2)
+       tamanio_bloque = 12
         
-        for x in range(x_inicio, x_inicio + tamano_cuadricula, tamanio_bloque):
-            for y in range(y_inicio, y_inicio + tamano_cuadricula, tamanio_bloque):
-                if (x + tamanio_bloque//2 - centro_img_x)**2 + (y + tamanio_bloque//2 - centro_img_y)**2 <= radio_img**2:
-                    self._bloques_rasca.append(
-                        pygame.Rect(x, y, tamanio_bloque, tamanio_bloque)
-                    )
+       for x in range(x_inicio, x_inicio + ancho_img, tamanio_bloque):
+            for y in range(y_inicio, y_inicio + alto_img, tamanio_bloque):
+                self._bloques_rasca.append(
+                    pygame.Rect(x, y, tamanio_bloque, tamanio_bloque)
+                )
 
     def procesar_rasca_mouse(self, pos_mouse: tuple[int, int]) -> None:
         self._bloques_rasca = [
@@ -228,12 +234,13 @@ class RenderizadorJuego:
             (abs(b.centerx - pos_mouse[0]) < 20 and abs(b.centery - pos_mouse[1]) < 20))
         ]
 
+    # PANTALLA 4: JUEGO 
 
     def dibujar_interfaz(
         self, pantalla, carta_actual, puntuacion: int, mensaje: str, revelada: bool = False, modo: str = "normal"
     ) -> None:
         if carta_actual:
-            if carta_actual != self._ultima_carta_procesada:
+            if carta_actual != self._ultima_carta_procesada or (modo == "rasca" and not self._bloques_rasca):
                 self._opciones_actuales = carta_actual.obtener_opciones_mezcladas()
                 self._ultima_carta_procesada = carta_actual
                 if modo == "rasca":
@@ -242,69 +249,44 @@ class RenderizadorJuego:
             ruta_img = const.IMAGES_DIR / carta_actual.nombre_imagen
             ancho_real = pantalla.get_width()
             centro_img_x = ancho_real // 2            
-            centro_img_y = 230
-            radio_img = 95
+            centro_img_y = 225
+
+            ancho_img = 440
+            alto_img = 310
 
             try:
                 imagen = pygame.image.load(str(ruta_img)).convert()
                 
-                if not revelada:
-                    if modo == "rasca":
-                        tamano_completo = radio_img * 2
-                        imagen_escalada = pygame.transform.scale(imagen, (tamano_completo, tamano_completo))
+                imagen = pygame.image.load(str(ruta_img)).convert()
+                imagen_escalada = pygame.transform.scale(imagen, (ancho_img, alto_img))
+                
+                pos_x = centro_img_x - (ancho_img // 2)
+                pos_y = centro_img_y - (alto_img // 2)
                         
-                        mascara = pygame.Surface((tamano_completo, tamano_completo), pygame.SRCALPHA)
-                        pygame.draw.circle(mascara, (255, 255, 255, 255), (radio_img, radio_img), radio_img)
-                        imagen_escalada.blit(mascara, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-                        
-                        pantalla.blit(imagen_escalada, (centro_img_x - radio_img, centro_img_y - radio_img))
-                        
-                        for bloque in self._bloques_rasca:
+                pantalla.blit(imagen_escalada, (pos_x, pos_y))                        
+
+
+                if modo == "rasca":      
+                    for bloque in self._bloques_rasca:
                             pygame.draw.rect(pantalla, (150, 150, 150), bloque)
                             pygame.draw.rect(pantalla, (100, 100, 100), bloque, width=1)
-                    else:
-                        diametro = radio_img * 2
-                        imagen_escalada = pygame.transform.scale(imagen, (diametro, diametro))
-
-                        mascara = pygame.Surface((diametro, diametro), pygame.SRCALPHA)
-                        mascara.fill((0, 0, 0, 0))
-                        pygame.draw.circle(mascara, (255, 255, 255, 255), (radio_img, radio_img), radio_img)
-
-                        imagen_mostrar = imagen_escalada.copy()
-                        imagen_mostrar.blit(mascara, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-
-                        pygame.draw.circle(pantalla, (220, 220, 220), (centro_img_x, centro_img_y), radio_img)
-                        pantalla.blit(imagen_mostrar, (centro_img_x - radio_img, centro_img_y - radio_img))
-                else:
-                    tamano_revelado = 200
-                    imagen_escalada = pygame.transform.scale(imagen, (tamano_revelado, tamano_revelado))
-                    rect_imagen = imagen_escalada.get_rect(center=(centro_img_x, centro_img_y))
-                    pantalla.blit(imagen_escalada, rect_imagen.topleft)
-
             except Exception as e:
                 print(f"Error cargando imagen: {e}")
-                pygame.draw.circle(
-                    pantalla,
-                    (220, 220, 220),
-                    (centro_img_x, centro_img_y),
-                    radio_img,
-                )
+                rect_error = pygame.Rect(0, 0, ancho_img, alto_img)
+                rect_error.center = (centro_img_x, centro_img_y)
+                pygame.draw.rect(pantalla, (220, 220, 220), rect_error)
 
-            if not revelada:
-                pygame.draw.circle(
+            if modo != "rasca":
+                rect_marco = pygame.Rect(0, 0, ancho_img, alto_img)
+                rect_marco.center = (centro_img_x, centro_img_y)
+                pygame.draw.rect(
                     pantalla,
                     (76, 175, 80),
-                    (centro_img_x, centro_img_y),
-                    radio_img,
-                    width=5,
+                    rect_marco,
+                    width=4,
+                    border_radius=8,
                 )
-            else:
-                tamano_revelado = 200
-                rect_marco = pygame.Rect(0, 0, tamano_revelado, tamano_revelado)
-                rect_marco.center = (centro_img_x, centro_img_y)
-                pygame.draw.rect(pantalla, (76, 175, 80), rect_marco, width=4, border_radius=12)
 
-        # Dibujar botones de opciones (Grilla 2x2) estables
         for i, rect in enumerate(self.rects_opciones):
             pygame.draw.rect(
                 pantalla, const.COLOR_BOTON, rect, border_radius=12
@@ -334,12 +316,12 @@ class RenderizadorJuego:
                 return self._opciones_actuales[i]
         return None
 
+    #PANTALLA 5: RONDA SÍ / NO 
 
     def dibujar_ronda_sino(
         self,
         pantalla,
         pregunta_actual,
-        tiempo_restante: float,
         puntuacion: int,
         mensaje: str,
     ) -> None:
@@ -369,11 +351,6 @@ class RenderizadorJuego:
         txt_no = self.fuente_titulo.render("NO", True, (255, 255, 255))
         no_rect = txt_no.get_rect(center=self.rect_btn_no.center)
         pantalla.blit(txt_no, no_rect)
-
-        txt_tiempo = self.fuente_texto.render(
-            f"Tiempo: {int(tiempo_restante)}s", True, (200, 50, 50)
-        )
-        pantalla.blit(txt_tiempo, (50, 40))
 
         txt_puntos = self.fuente_titulo.render(
             f"Puntuación: {puntuacion}", True, const.COLOR_TEXTO_DARK
