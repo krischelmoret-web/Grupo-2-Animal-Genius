@@ -27,12 +27,16 @@ class MotorJuego:
         # Variables de juego
         self._indice_actual = 0
         self._puntuacion = 0
+        self._aciertos = 0  
+        self._fallos = 0    
         self._mensaje_retroalimentacion = ""
         self._tiempo_mensaje = 0.0
 
         self._revelando_carta = False
         self._tiempo_revelacion = 0.0
 
+        # Control de música
+        self._musica_activa = True
         
         # --- CARGA DE SONIDOS Y MÚSICA ---
         try:
@@ -77,6 +81,14 @@ class MotorJuego:
         if self._sonido_clic:
             self._sonido_clic.play()
 
+    def _alternar_musica(self) -> None:
+        """Activa o silencia la música del juego"""
+        self._musica_activa = not self._musica_activa
+        if self._musica_activa:
+            pygame.mixer.music.unpause()
+        else:
+            pygame.mixer.music.pause()
+
     def ejecutar(self) -> None:
         while self._ejecutando:
             dt = self._reloj.tick(const.FPS) / 1000.0
@@ -102,13 +114,17 @@ class MotorJuego:
                         self._visual.procesar_rasca_mouse(evento.pos)
 
             elif evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
-                #Menú principal
+                # Menú principal
                 if self._estado == "MENU_PRINCIPAL":
-                    if self._visual.obtener_clic_menu_principal(evento.pos):
+                    # Evaluamos primero el botón de música
+                    if self._visual.obtener_clic_boton_musica(evento.pos):
+                        self._reproducir_clic()
+                        self._alternar_musica()
+                    elif self._visual.obtener_clic_menu_principal(evento.pos):
                         self._reproducir_clic()
                         self._estado = "SELECCION_ZONA"
 
-                #Elección de zona
+                # Elección de zona
                 elif self._estado == "SELECCION_ZONA":
                     zona = self._visual.obtener_clic_zona(evento.pos)
                     if zona:
@@ -117,8 +133,10 @@ class MotorJuego:
                         self._album.filtrar_por_zona(zona)
                         self._estado = "SELECCION_MODO"
                         self._reproducir_musica_bioma(zona)
+                        if not self._musica_activa:
+                            pygame.mixer.music.pause()
 
-                #Menú de selección de modos de juego
+                # Menú de selección de modos de juego
                 elif self._estado == "SELECCION_MODO":
                     modo = self._visual.obtener_clic_menu_modos(evento.pos)
                     if modo:
@@ -127,17 +145,26 @@ class MotorJuego:
                         self._estado = "JUGANDO"
                         self._indice_actual = 0
                         self._puntuacion = 0
+                        self._aciertos = 0  
+                        self._fallos = 0    
                         self._mensaje_retroalimentacion = ""
                         
                         if self._modo_juego == "preguntas":
                             self._album.filtrar_preguntas_sino(self._zona_seleccionada)
 
-                #Partida 
+                # Partida 
                 elif self._estado == "JUGANDO":
                     if self._modo_juego == "preguntas":
                         self._evaluar_clic_preguntas(evento.pos)
                     else:
                         self._evaluar_clic(evento.pos)
+
+                # Pantalla de Resultados Finales
+                elif self._estado == "RESULTADOS":
+                    if self._visual.obtener_clic_resultados(evento.pos):
+                        self._reproducir_clic()
+                        self._estado = "MENU_PRINCIPAL"
+                        self._reproducir_musica_menu()
 
     def _evaluar_clic(self, pos_mouse: tuple[int, int]) -> None:
         if self._revelando_carta:
@@ -153,12 +180,14 @@ class MotorJuego:
                 and opcion_seleccionada == carta_actual.respuesta_correcta
             ):
                 self._puntuacion += 10
+                self._aciertos += 1
                 self._revelando_carta = True
                 self._tiempo_revelacion = 2.0
                 self._mensaje_retroalimentacion = "¡Muy bien! ¡Correcto!"
                 if self._sonido_correcto:
                     self._sonido_correcto.play()
             else:
+                self._fallos += 1
                 self._revelando_carta = True
                 self._tiempo_revelacion = 2.0
                 self._mensaje_retroalimentacion = (
@@ -180,10 +209,12 @@ class MotorJuego:
 
                 if es_correcto:
                     self._puntuacion += 10
+                    self._aciertos += 1
                     self._mensaje_retroalimentacion = "¡Correcto!"
                     if self._sonido_correcto:
                         self._sonido_correcto.play()
                 else:
+                    self._fallos += 1
                     self._mensaje_retroalimentacion = "¡Incorrecto!"
                     if self._sonido_incorrecto:
                         self._sonido_incorrecto.play()
@@ -209,13 +240,14 @@ class MotorJuego:
             limite = self._album.total_cartas()
 
         if self._indice_actual >= limite:
-            self._indice_actual = 0
+            self._estado = "RESULTADOS"
 
     def _dibujar(self) -> None:
         self._pantalla.fill(const.COLOR_FONDO)
 
         if self._estado == "MENU_PRINCIPAL":
             self._visual.dibujar_menu_principal(self._pantalla)
+            self._visual.dibujar_boton_musica(self._pantalla, self._musica_activa)
         elif self._estado == "SELECCION_ZONA":
             self._visual.dibujar_menu_zonas(self._pantalla)
         elif self._estado == "SELECCION_MODO":
@@ -239,3 +271,17 @@ class MotorJuego:
                     self._mensaje_retroalimentacion,
                     modo=self._modo_juego, 
                 )
+        elif self._estado == "RESULTADOS":
+            if self._modo_juego == "preguntas":
+                total_preguntas = len(self._album._preguntas_sino_filtradas)
+            else:
+                total_preguntas = self._album.total_cartas()
+            
+            total_posible = total_preguntas * 10
+            self._visual.dibujar_pantalla_resultados(
+                self._pantalla,
+                puntuacion_final=self._puntuacion,
+                total_posible=total_posible,
+                aciertos=self._aciertos,
+                fallos=self._fallos
+            )
