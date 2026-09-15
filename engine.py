@@ -22,7 +22,7 @@ class MotorJuego:
         # Control de Estados y Modos de Juego
         self._estado = "MENU_PRINCIPAL"
         self._zona_seleccionada = None
-        self._modo_juego = None  # Puede ser: "normal", "preguntas", "rasca"
+        self._modo_juego = None  
 
         # Variables de juego
         self._indice_actual = 0
@@ -52,17 +52,18 @@ class MotorJuego:
                 if evento.key == pygame.K_ESCAPE:
                     self._ejecutando = False
 
-           
             elif evento.type == pygame.MOUSEMOTION:
                 if self._estado == "JUGANDO" and self._modo_juego == "rasca":
                     if not self._revelando_carta:
                         self._visual.procesar_rasca_mouse(evento.pos)
 
             elif evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
+                #Menú principal
                 if self._estado == "MENU_PRINCIPAL":
                     if self._visual.obtener_clic_menu_principal(evento.pos):
                         self._estado = "SELECCION_ZONA"
 
+                #Elección de zona
                 elif self._estado == "SELECCION_ZONA":
                     zona = self._visual.obtener_clic_zona(evento.pos)
                     if zona:
@@ -70,15 +71,20 @@ class MotorJuego:
                         self._album.filtrar_por_zona(zona)
                         self._estado = "SELECCION_MODO"
 
+                #Menú de selección de modos de juego
                 elif self._estado == "SELECCION_MODO":
                     modo = self._visual.obtener_clic_menu_modos(evento.pos)
                     if modo:
-                        self._modo_juego = modo  # "normal", "preguntas" o "rasca"
+                        self._modo_juego = modo  
                         self._estado = "JUGANDO"
                         self._indice_actual = 0
                         self._puntuacion = 0
                         self._mensaje_retroalimentacion = ""
+                        
+                        if self._modo_juego == "preguntas":
+                            self._album.filtrar_preguntas_sino(self._zona_seleccionada)
 
+                #Partida 
                 elif self._estado == "JUGANDO":
                     if self._modo_juego == "preguntas":
                         self._evaluar_clic_preguntas(evento.pos)
@@ -115,17 +121,19 @@ class MotorJuego:
 
         respuesta_usuario = self._visual.obtener_clic_sino(pos_mouse)
         if respuesta_usuario is not None:
-            carta_actual = self._album.obtener_carta(self._indice_actual)
-            es_correcto = (respuesta_usuario == getattr(carta_actual, "es_verdadera", True))
+            pregunta_actual = self._album.obtener_pregunta_sino(self._indice_actual)
 
-            if es_correcto:
-                self._puntuacion += 10
-                self._mensaje_retroalimentacion = "¡Correcto!"
-            else:
-                self._mensaje_retroalimentacion = "¡Incorrecto!"
+            if pregunta_actual:
+                es_correcto = (respuesta_usuario == pregunta_actual.es_verdadero)
 
-            self._revelando_carta = True
-            self._tiempo_revelacion = 2.0
+                if es_correcto:
+                    self._puntuacion += 10
+                    self._mensaje_retroalimentacion = "¡Correcto!"
+                else:
+                    self._mensaje_retroalimentacion = "¡Incorrecto!"
+
+                self._revelando_carta = True
+                self._tiempo_revelacion = 2.0
 
     def _actualizar(self, dt: float) -> None:
         if self._revelando_carta:
@@ -139,7 +147,12 @@ class MotorJuego:
         self._mensaje_retroalimentacion = ""
         self._visual._ultima_carta_procesada = None
 
-        if self._indice_actual >= self._album.total_cartas():
+        if self._modo_juego == "preguntas":
+            limite = len(self._album._preguntas_sino_filtradas)
+        else:
+            limite = self._album.total_cartas()
+
+        if self._indice_actual >= limite:
             self._indice_actual = 0
 
     def _dibujar(self) -> None:
@@ -152,22 +165,21 @@ class MotorJuego:
         elif self._estado == "SELECCION_MODO":
             self._visual.dibujar_menu_modos(self._pantalla)
         elif self._estado == "JUGANDO":
-            carta_actual = self._album.obtener_carta(self._indice_actual)
-            
             if self._modo_juego == "preguntas":
+                pregunta_actual = self._album.obtener_pregunta_sino(self._indice_actual)
                 self._visual.dibujar_ronda_sino(
                     self._pantalla,
-                    carta_actual,
-                    tiempo_restante=10.0,
+                    pregunta_actual,
                     puntuacion=self._puntuacion,
                     mensaje=self._mensaje_retroalimentacion
                 )
             else:
+                # Modo normal o rasca
+                carta_actual = self._album.obtener_carta(self._indice_actual)
                 self._visual.dibujar_interfaz(
                     self._pantalla,
                     carta_actual,
                     self._puntuacion,
                     self._mensaje_retroalimentacion,
-                    revelada=self._revelando_carta,
                     modo=self._modo_juego, 
                 )
