@@ -14,7 +14,7 @@ class Constantes():
     BACKGROUNDS_DIR: Path = ASSETS_DIR / "backgrounds"
 
     # Ventana y rendimiento
-    TITULO_JUEGO: str = "¿Quien es el animal?"
+    TITULO_JUEGO: str = "Animal Genius"
     ANCHO_PANTALLA: int = 1280
     ALTO_PANTALLA: int = 720
     FPS: int = 60
