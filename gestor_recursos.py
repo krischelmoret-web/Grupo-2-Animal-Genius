@@ -25,7 +25,7 @@ class GestorRecursos:
         fondos = {}
 
         for clave, archivo in archivos.items():
-            ruta = const.IMAGES_DIR / archivo
+            ruta = const.BACKGROUNDS_DIR / archivo
             try:
                 img = pygame.image.load(str(ruta)).convert()
                 fondos[clave] = pygame.transform.scale(
@@ -49,7 +49,7 @@ class GestorRecursos:
         surfaces = {}
 
         for bioma, archivo in archivos_biomas.items():
-            ruta = const.IMAGES_DIR / archivo
+            ruta = const.BACKGROUNDS_DIR / archivo
             try:
                 img_base = pygame.image.load(str(ruta)).convert()
                 img_escalada = pygame.transform.smoothscale(
