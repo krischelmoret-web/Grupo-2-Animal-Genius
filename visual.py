@@ -2,11 +2,105 @@ import math
 import pygame
 from constants import const
 
+# --- AÑADIR A PARTIR DE AQUÍ ---
+COLORES_BIOMAS = {
+    "pradera": {"arriba": (255, 160, 50), "abajo": (180, 80, 15)},
+    "bosque":  {"arriba": (240, 65, 65),  "abajo": (150, 20, 20)},
+    "selva":   {"arriba": (110, 220, 90), "abajo": (35, 130, 45)},
+    "artico":  {"arriba": (185, 125, 245),"abajo": (105, 45, 165)},
+    "oceano":  {"arriba": (85, 165, 255), "abajo": (20, 65, 175)},
+}
+
+
+def crear_etiqueta_glossy(texto: str, fuente: pygame.font.Font, color_arriba: tuple, color_abajo: tuple) -> pygame.Surface:
+    """Genera una placa estilo cápsula/píldora con degradado vertical, brillo glossy y contorno blanco."""
+    txt_surf = fuente.render(texto, True, (255, 255, 255))
+    tw, th = txt_surf.get_size()
+
+    pad_x, pad_y = 22, 8
+    w = tw + pad_x * 2
+    h = th + pad_y * 2
+
+    # 1. Superficie principal del badge con transparencia habilitada
+    badge = pygame.Surface((w, h), pygame.SRCALPHA)
+
+    # 2. Degradado vertical con formato SRCALPHA
+    grad_1x2 = pygame.Surface((1, 2), pygame.SRCALPHA)
+    grad_1x2.set_at((0, 0), (*color_arriba, 255))
+    grad_1x2.set_at((0, 1), (*color_abajo, 255))
+    grad_surf = pygame.transform.smoothscale(grad_1x2, (w, h))
+
+    # 3. Máscara redondeada (cápsula)
+    mask = pygame.Surface((w, h), pygame.SRCALPHA)
+    pygame.draw.rect(mask, (255, 255, 255, 255), (0, 0, w, h), border_radius=h // 2)
+
+    # Recortar el degradado respetando la forma de cápsula
+    grad_surf.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+    badge.blit(grad_surf, (0, 0))
+
+    # 4. Efecto Bisel/Brillo (Glossy)
+    brillo = pygame.Surface((w, h), pygame.SRCALPHA)
+    pygame.draw.ellipse(brillo, (255, 255, 255, 110), (4, 2, w - 8, h // 2))
+    brillo.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+    badge.blit(brillo, (0, 0))
+
+    # 5. Borde blanco
+    pygame.draw.rect(badge, (255, 255, 255), (0, 0, w, h), width=4, border_radius=h // 2)
+
+    # 6. Texto con sombra
+    sombra = fuente.render(texto, True, (0, 0, 0, 120))
+    badge.blit(sombra, (pad_x + 1, pad_y + 2))
+    badge.blit(txt_surf, (pad_x, pad_y))
+
+    return badge
+
+def crear_boton_glossy(
+    texto: str, 
+    fuente: pygame.font.Font, 
+    ancho: int, 
+    alto: int, 
+    color_arriba: tuple = (100, 200, 255), 
+    color_abajo: tuple = (30, 100, 200)
+) -> pygame.Surface:
+    """Genera un botón con forma de píldora, degradado lineal, efecto bisel y texto."""
+    btn = pygame.Surface((ancho, alto), pygame.SRCALPHA)
+
+    # 1. Degradado vertical
+    grad_1x2 = pygame.Surface((1, 2), pygame.SRCALPHA)
+    grad_1x2.set_at((0, 0), (*color_arriba, 255))
+    grad_1x2.set_at((0, 1), (*color_abajo, 255))
+    grad_surf = pygame.transform.smoothscale(grad_1x2, (ancho, alto))
+
+    # 2. Máscara de cápsula (bordes redondeados)
+    mask = pygame.Surface((ancho, alto), pygame.SRCALPHA)
+    pygame.draw.rect(mask, (255, 255, 255, 255), (0, 0, ancho, alto), border_radius=alto // 2)
+
+    grad_surf.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+    btn.blit(grad_surf, (0, 0))
+
+    # 3. Efecto Glossy / Bisel
+    brillo = pygame.Surface((ancho, alto), pygame.SRCALPHA)
+    pygame.draw.ellipse(brillo, (255, 255, 255, 100), (6, 2, ancho - 12, alto // 2))
+    brillo.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+    btn.blit(brillo, (0, 0))
+
+    # 4. Borde blanco
+    pygame.draw.rect(btn, (255, 255, 255), (0, 0, ancho, alto), width=3, border_radius=alto // 2)
+
+    # 5. Texto centrado con sombra
+    txt_surf = fuente.render(texto, True, (255, 255, 255))
+    sombra = fuente.render(texto, True, (0, 0, 0, 120))
+    t_rect = txt_surf.get_rect(center=(ancho // 2, alto // 2))
+
+    btn.blit(sombra, (t_rect.x + 1, t_rect.y + 2))
+    btn.blit(txt_surf, t_rect)
+
+    return btn
 
 class RenderizadorJuego:
 
     def __init__(self):
-        ruta_fuente = const.FONTS_DIR / "OpenSans.ttf"
+        ruta_fuente = const.FONTS_DIR / "comic.ttf"
         self.fuente_texto = pygame.font.Font(str(ruta_fuente), 24)
         self.fuente_titulo = pygame.font.Font(str(ruta_fuente), 32)
 
@@ -64,6 +158,40 @@ class RenderizadorJuego:
             const.ANCHO_PANTALLA // 2 - 160, 480, 320, 60
         )
 
+        # En el __init__ de RenderizadorJuego:
+        self.imagenes_zonas = {}
+        nombres_archivos = {
+            "pradera": "pradera.jpg",
+            "bosque": "bosque.jpg",
+            "selva": "selva.jpg",
+            "artico": "artico.jpg",
+            "oceano": "oceano.jpg",
+        }
+
+        for zona, archivo in nombres_archivos.items():
+            ruta = const.IMAGES_DIR / archivo
+            try:
+                self.imagenes_zonas[zona] = pygame.image.load(str(ruta)).convert()
+            except Exception as e:
+                print(f"Error al cargar la imagen {archivo}: {e}")
+                self.imagenes_zonas[zona] = None
+
+        try:
+            # Puedes usar archivos JPG/PNG ubicados en tu carpeta IMAGES_DIR
+            img_menu = pygame.image.load(str(const.IMAGES_DIR / "fondo_menu.jpg")).convert()
+            self.fondo_menu = pygame.transform.scale(img_menu, (const.ANCHO_PANTALLA, const.ALTO_PANTALLA))
+
+            img_modos = pygame.image.load(str(const.IMAGES_DIR / "fondo_modos.jpg")).convert()
+            self.fondo_modos = pygame.transform.scale(img_modos, (const.ANCHO_PANTALLA, const.ALTO_PANTALLA))
+
+            img_juego = pygame.image.load(str(const.IMAGES_DIR / "fondo_juego.jpg")).convert()
+            self.fondo_juego = pygame.transform.scale(img_juego, (const.ANCHO_PANTALLA, const.ALTO_PANTALLA))
+        except Exception as e:
+            print(f"Error al cargar fondos, se usará color sólido de respaldo: {e}")
+            self.fondo_menu = None
+            self.fondo_modos = None
+            self.fondo_juego = None
+
     def dibujar_menu_principal(self, pantalla) -> None:
         titulo = self.fuente_titulo.render(
             "Juego Educativo: Identifica el Animal", True, const.COLOR_TEXTO_DARK
@@ -71,32 +199,44 @@ class RenderizadorJuego:
         t_rect = titulo.get_rect(center=(const.ANCHO_PANTALLA // 2, 250))
         pantalla.blit(titulo, t_rect)
 
-        pygame.draw.rect(
-            pantalla, const.COLOR_BOTON, self.rect_btn_jugar, border_radius=15
+        # Botón JUGAR con estilo Glossy (Verde)
+        btn_jugar = crear_boton_glossy(
+            "JUGAR", self.fuente_titulo, 
+            self.rect_btn_jugar.width, self.rect_btn_jugar.height,
+            color_arriba=(110, 220, 90), color_abajo=(35, 130, 45)
         )
-        txt_jugar = self.fuente_texto.render("JUGAR", True, const.COLOR_TEXTO)
-        j_rect = txt_jugar.get_rect(center=self.rect_btn_jugar.center)
-        pantalla.blit(txt_jugar, j_rect)
+        pantalla.blit(btn_jugar, self.rect_btn_jugar)
 
     def obtener_clic_menu_principal(self, pos_mouse: tuple[int, int]) -> bool:
         return self.rect_btn_jugar.collidepoint(pos_mouse)
 
-    def dibujar_boton_musica(self, pantalla, musica_activa: bool) -> None:
-        color_fondo = (76, 175, 80) if musica_activa else (180, 180, 180)
-        pygame.draw.rect(pantalla, color_fondo, self.rect_btn_musica, border_radius=12)
-        pygame.draw.rect(pantalla, (40, 150, 220), self.rect_btn_musica, width=2, border_radius=12)
-        
-        texto = "Música: Activada" if musica_activa else "Música: Silenciada"
-        txt_musica = self.fuente_texto.render(texto, True, (255, 255, 255))
-        m_rect = txt_musica.get_rect(center=self.rect_btn_musica.center)
-        pantalla.blit(txt_musica, m_rect)
+    def obtener_clic_boton_musica(self, pos: tuple[int, int]) -> bool:
+        """Devuelve True si la posición del clic está dentro del botón de música."""
+        return self.rect_btn_musica.collidepoint(pos)
 
-    def obtener_clic_boton_musica(self, pos_mouse: tuple[int, int]) -> bool:
-        return self.rect_btn_musica.collidepoint(pos_mouse)
+    def dibujar_boton_musica(self, pantalla, musica_activa: bool) -> None:
+        texto = "Música: Activada" if musica_activa else "Música: Silenciada"
+        
+        # Verde si está activa, Gris si está silenciada
+        color_arriba = (110, 220, 90) if musica_activa else (190, 190, 190)
+        color_abajo = (35, 130, 45) if musica_activa else (100, 100, 100)
+
+        btn_musica = crear_boton_glossy(
+            texto, self.fuente_texto,
+            self.rect_btn_musica.width, self.rect_btn_musica.height,
+            color_arriba=color_arriba, color_abajo=color_abajo
+        )
+        pantalla.blit(btn_musica, self.rect_btn_musica)
 
     def dibujar_menu_zonas(self, pantalla) -> None:
+        # Dibujar fondo primero
+        if self.fondo_menu:
+            pantalla.blit(self.fondo_menu, (0, 0))
+        else:
+            pantalla.fill((230, 240, 250)) # Color sólido de respaldo
+
         titulo = self.fuente_titulo.render(
-            "Selecciona una Zona", True, const.COLOR_TEXTO_DARK
+            "Elige un lugar para explorar", True, const.COLOR_TEXTO_DARK
         )
         t_rect = titulo.get_rect(center=(const.ANCHO_PANTALLA // 2, 70))
         pantalla.blit(titulo, t_rect)
@@ -109,60 +249,48 @@ class RenderizadorJuego:
             "bosque": "Bosque",
         }
 
-        imagenes_zonas = {
-            "artico": "artico.jpg",
-            "oceano": "oceano.jpg",
-            "pradera": "pradera.jpg",
-            "selva": "selva.jpg",
-            "bosque": "bosque.jpg",
-        }
-
         for zona, datos in self.zonas_circulos.items():
             cx, cy = datos["centro"]
             r = datos["radio"]
-
-            try:
-                nombre_archivo = imagenes_zonas.get(zona, "")
-                ruta_img = const.IMAGES_DIR / nombre_archivo
-                imagen = pygame.image.load(str(ruta_img)).convert()
-                diametro = r * 2
-                imagen = pygame.transform.scale(
-                    imagen, (diametro, diametro)
-                )
-
-                mascara = pygame.Surface(
-                    (diametro, diametro), pygame.SRCALPHA
-                )
-                pygame.draw.circle(
-                    mascara, (255, 255, 255, 255), (r, r), r
-                )
-                imagen.blit(
-                    mascara, (0, 0), special_flags=pygame.BLEND_RGBA_MIN
-                )
-                pantalla.blit(imagen, (cx - r, cy - r))
-            except Exception:
-                pygame.draw.circle(pantalla, (255, 255, 255), (cx, cy), r)
-
-            pygame.draw.circle(
-                pantalla, (76, 175, 80), (cx, cy), r, width=5
+            diametro = r * 2
+            colores = COLORES_BIOMAS.get(
+                zona, {"arriba": (180, 180, 180), "abajo": (80, 80, 80)}
             )
 
-            txt = self.fuente_texto.render(
-                nombres_amigables[zona], True, (255, 255, 255)
+            img_base = self.imagenes_zonas.get(zona)
+
+            if img_base:
+                # 1. Escalar la imagen al tamaño del círculo
+                img_escalada = pygame.transform.smoothscale(img_base, (diametro, diametro)).convert_alpha()
+
+                # 2. Crear una superficie transparente para el resultado recortado
+                superficie_final = pygame.Surface((diametro, diametro), pygame.SRCALPHA)
+
+                # 3. Crear la máscara circular
+                mascara = pygame.Surface((diametro, diametro), pygame.SRCALPHA)
+                pygame.draw.circle(mascara, (255, 255, 255, 255), (r, r), r)
+
+                # 4. Dibujar la imagen recortada en la superficie transparente
+                superficie_final.blit(img_escalada, (0, 0))
+                superficie_final.blit(mascara, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+
+                pantalla.blit(superficie_final, (cx - r, cy - r))
+            else:
+                # Color de respaldo si falta la imagen
+                pygame.draw.circle(pantalla, (220, 220, 220), (cx, cy), r)
+
+            # Borde exterior verde del círculo
+            pygame.draw.circle(pantalla, (76, 175, 80), (cx, cy), r, width=5)
+
+            # Etiqueta Glossy superpuesta abajo
+            badge = crear_etiqueta_glossy(
+                nombres_amigables.get(zona, zona),
+                self.fuente_texto,
+                colores["arriba"],
+                colores["abajo"]
             )
-            rect_txt = txt.get_rect(center=(cx, cy + r - 10))
-            rect_fondo_txt = rect_txt.inflate(28, 12)
-            pygame.draw.rect(
-                pantalla, (40, 50, 120), rect_fondo_txt, border_radius=12
-            )
-            pygame.draw.rect(
-                pantalla,
-                (255, 255, 255),
-                rect_fondo_txt,
-                width=2,
-                border_radius=12,
-            )
-            pantalla.blit(txt, rect_txt)
+            rect_badge = badge.get_rect(center=(cx, cy + r - 10))
+            pantalla.blit(badge, rect_badge)
 
     def obtener_clic_zona(self, pos_mouse: tuple[int, int]) -> str | None:
         x_mouse, y_mouse = pos_mouse
@@ -174,6 +302,12 @@ class RenderizadorJuego:
         return None
 
     def dibujar_menu_modos(self, pantalla) -> None:
+       # Dibujar fondo primero
+        if self.fondo_modos:
+            pantalla.blit(self.fondo_modos, (0, 0))
+        else:
+            pantalla.fill((230, 240, 250))
+
         titulo = self.fuente_titulo.render(
             "Selecciona un Modo de Juego", True, const.COLOR_TEXTO_DARK
         )
@@ -186,13 +320,14 @@ class RenderizadorJuego:
             "rasca": "Modo Rasca y Gana",
         }
 
+        # Botones de modo con estilo Glossy (Azul)
         for modo, rect in self.rects_modos.items():
-            pygame.draw.rect(pantalla, const.COLOR_BOTON, rect, border_radius=12)
-            pygame.draw.rect(pantalla, (40, 150, 220), rect, width=2, border_radius=12)
-            
-            txt_modo = self.fuente_texto.render(nombres_modos[modo], True, const.COLOR_TEXTO)
-            m_rect = txt_modo.get_rect(center=rect.center)
-            pantalla.blit(txt_modo, m_rect)
+            btn_modo = crear_boton_glossy(
+                nombres_modos[modo], self.fuente_texto,
+                rect.width, rect.height,
+                color_arriba=(85, 165, 255), color_abajo=(20, 65, 175)
+            )
+            pantalla.blit(btn_modo, rect)
 
     def obtener_clic_menu_modos(self, pos_mouse: tuple[int, int]) -> str | None:
         for modo, rect in self.rects_modos.items():
@@ -224,10 +359,16 @@ class RenderizadorJuego:
         ]
 
     def dibujar_interfaz(
-        self, pantalla, carta_actual, puntuacion: int, mensaje: str, 
+       self, pantalla, carta_actual, puntuacion: int, mensaje: str, 
         revelada: bool = False, modo: str = "normal", 
         tiempo_restante: float = 0.0, tiempo_agotado: bool = False
     ) -> None:
+        # Dibujar el fondo de la partida en la primera línea
+        if self.fondo_juego:
+            pantalla.blit(self.fondo_juego, (0, 0))
+        else:
+            pantalla.fill((240, 240, 240))
+
         if carta_actual:
             if carta_actual != self._ultima_carta_procesada or (modo == "rasca" and not self._bloques_rasca):
                 self._opciones_actuales = carta_actual.obtener_opciones_mezcladas()
@@ -273,16 +414,15 @@ class RenderizadorJuego:
                     border_radius=8,
                 )
 
+        # Botones de opciones con estilo Glossy (Naranja)
         for i, rect in enumerate(self.rects_opciones):
-            pygame.draw.rect(
-                pantalla, const.COLOR_BOTON, rect, border_radius=12
-            )
             texto_opcion = self._opciones_actuales[i] if i < len(self._opciones_actuales) else ""
-            txt_surf = self.fuente_texto.render(
-                texto_opcion, True, const.COLOR_TEXTO
+            btn_opcion = crear_boton_glossy(
+                texto_opcion, self.fuente_texto,
+                rect.width, rect.height,
+                color_arriba=(255, 170, 60), color_abajo=(190, 85, 10)
             )
-            txt_rect = txt_surf.get_rect(center=rect.center)
-            pantalla.blit(txt_surf, txt_rect)
+            pantalla.blit(btn_opcion, rect)
 
         txt_puntos = self.fuente_titulo.render(
             f"Puntuación: {puntuacion}", True, const.COLOR_TEXTO_DARK
@@ -308,12 +448,14 @@ class RenderizadorJuego:
         return None
 
     def dibujar_ronda_sino(
-        self,
-        pantalla,
-        pregunta_actual,
-        puntuacion: int,
-        mensaje: str,
+        self, pantalla, pregunta_actual, puntuacion: int, mensaje: str
     ) -> None:
+        # Dibujar el fondo de la partida en la primera línea
+        if self.fondo_juego:
+            pantalla.blit(self.fondo_juego, (0, 0))
+        else:
+            pantalla.fill((240, 240, 240))
+
         titulo_ronda = self.fuente_titulo.render(
             "Ronda Rápida: ¿Sí o No?", True, const.COLOR_TEXTO_DARK
         )
@@ -327,19 +469,21 @@ class RenderizadorJuego:
             p_rect = txt_preg.get_rect(center=(const.ANCHO_PANTALLA // 2, 280))
             pantalla.blit(txt_preg, p_rect)
 
-        pygame.draw.rect(
-            pantalla, (76, 175, 80), self.rect_btn_si, border_radius=15
+        # Botón SÍ (Verde Glossy)
+        btn_si = crear_boton_glossy(
+            "SÍ", self.fuente_titulo,
+            self.rect_btn_si.width, self.rect_btn_si.height,
+            color_arriba=(110, 220, 90), color_abajo=(35, 130, 45)
         )
-        txt_si = self.fuente_titulo.render("SÍ", True, (255, 255, 255))
-        si_rect = txt_si.get_rect(center=self.rect_btn_si.center)
-        pantalla.blit(txt_si, si_rect)
+        pantalla.blit(btn_si, self.rect_btn_si)
 
-        pygame.draw.rect(
-            pantalla, (244, 67, 54), self.rect_btn_no, border_radius=15
+        # Botón NO (Rojo Glossy)
+        btn_no = crear_boton_glossy(
+            "NO", self.fuente_titulo,
+            self.rect_btn_no.width, self.rect_btn_no.height,
+            color_arriba=(240, 65, 65), color_abajo=(150, 20, 20)
         )
-        txt_no = self.fuente_titulo.render("NO", True, (255, 255, 255))
-        no_rect = txt_no.get_rect(center=self.rect_btn_no.center)
-        pantalla.blit(txt_no, no_rect)
+        pantalla.blit(btn_no, self.rect_btn_no)
 
         txt_puntos = self.fuente_titulo.render(
             f"Puntuación: {puntuacion}", True, const.COLOR_TEXTO_DARK
@@ -381,25 +525,22 @@ class RenderizadorJuego:
         pantalla.blit(txt_fallos, f_rect)
 
         if aciertos >= fallos:
-            mensaje = "¡Excelente trabajo! Has demostrado un gran conocimiento."
+            mensaje = "¡Qué pedazo de cerebro! Me dejas impresionado."
             color_msg = (46, 125, 50)  
         else:
-            mensaje = "¡Buen intento! Sigue practicando para mejorar la próxima."
+            mensaje = "¡No te desanimes! Sigue practicando para mejorar la próxima."
             color_msg = (211, 47, 47)  
 
         txt_msg = self.fuente_texto.render(mensaje, True, color_msg)
         m_rect = txt_msg.get_rect(center=(const.ANCHO_PANTALLA // 2, 390))
         pantalla.blit(txt_msg, m_rect)
 
-        pygame.draw.rect(
-            pantalla, const.COLOR_BOTON, self.rect_btn_reiniciar, border_radius=12
+        btn_reiniciar = crear_boton_glossy(
+            "Volver al Menú", self.fuente_texto,
+            self.rect_btn_reiniciar.width, self.rect_btn_reiniciar.height,
+            color_arriba=(85, 165, 255), color_abajo=(20, 65, 175)
         )
-        pygame.draw.rect(
-            pantalla, (40, 150, 220), self.rect_btn_reiniciar, width=2, border_radius=12
-        )
-        txt_menu = self.fuente_texto.render("Volver al Menú", True, const.COLOR_TEXTO)
-        menu_rect = txt_menu.get_rect(center=self.rect_btn_reiniciar.center)
-        pantalla.blit(txt_menu, menu_rect)
+        pantalla.blit(btn_reiniciar, self.rect_btn_reiniciar)
 
     def obtener_clic_resultados(self, pos_mouse: tuple[int, int]) -> bool:
         return self.rect_btn_reiniciar.collidepoint(pos_mouse)
