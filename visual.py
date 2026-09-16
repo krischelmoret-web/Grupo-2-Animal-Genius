@@ -6,40 +6,30 @@ from constants import const
 class RenderizadorJuego:
 
     def __init__(self):
-
         ruta_fuente = const.FONTS_DIR / "OpenSans.ttf"
         self.fuente_texto = pygame.font.Font(str(ruta_fuente), 24)
         self.fuente_titulo = pygame.font.Font(str(ruta_fuente), 32)
 
-        # Menú Principal ---
         self.rect_btn_jugar = pygame.Rect(
             const.ANCHO_PANTALLA // 2 - 150, 400, 300, 70
         )
         self.rect_btn_musica = pygame.Rect(const.ANCHO_PANTALLA // 2 - 150, 490, 300, 50)
 
-        # Menú de Zonas / Biomas 
         centro_x, centro_y = const.ANCHO_PANTALLA // 2, const.ALTO_PANTALLA // 2 + 20
-        radio_orbita = 220
-        radio_circulo_imagen = 75
+        radio_orbita_x = 340  
+        radio_orbita_y = 140  
+        radio_circulo_imagen = 95
+        
+        self.radio_centro_nucleo = 70
 
-        angulos_zonas = {
-            "pradera": math.radians(210),
-            "bosque": math.radians(150),
-            "selva": math.radians(85),
-            "oceano": math.radians(20),
-            "artico": math.radians(330),
+        self.zonas_circulos = {
+            "pradera": {"centro": (centro_x - radio_orbita_x, centro_y - radio_orbita_y), "radio": radio_circulo_imagen},
+            "bosque":  {"centro": (centro_x - radio_orbita_x, centro_y + radio_orbita_y), "radio": radio_circulo_imagen},
+            "artico":  {"centro": (centro_x + radio_orbita_x, centro_y - radio_orbita_y), "radio": radio_circulo_imagen},
+            "oceano":  {"centro": (centro_x + radio_orbita_x, centro_y + radio_orbita_y), "radio": radio_circulo_imagen},
+            "selva":   {"centro": (centro_x, centro_y + radio_orbita_y + 80), "radio": radio_circulo_imagen},
         }
 
-        self.zonas_circulos = {}
-        for zona, angulo in angulos_zonas.items():
-            x = int(centro_x + radio_orbita * math.cos(angulo))
-            y = int(centro_y + radio_orbita * math.sin(angulo))
-            self.zonas_circulos[zona] = {
-                "centro": (x, y),
-                "radio": radio_circulo_imagen,
-            }
-
-        # Menú de Modos de Juego 
         self.rects_modos = {
             "normal": pygame.Rect(const.ANCHO_PANTALLA // 2 - 175, 250, 350, 60),
             "preguntas": pygame.Rect(const.ANCHO_PANTALLA // 2 - 175, 330, 350, 60),
@@ -48,7 +38,6 @@ class RenderizadorJuego:
 
         self._bloques_rasca = []
 
-        # Interfaz de Juego 
         ancho_b, alto_b = 350, 50
         espacio_x = 20  
         ancho_total_fila = (ancho_b * 2) + espacio_x
@@ -66,7 +55,6 @@ class RenderizadorJuego:
         self._opciones_actuales = ["", "", "", ""]
         self._ultima_carta_procesada = None  
 
-        # Ronda Sí / No ---
         self.rect_btn_si = pygame.Rect(
             const.ANCHO_PANTALLA // 2 - 220, 480, 180, 70
         )
@@ -74,13 +62,10 @@ class RenderizadorJuego:
             const.ANCHO_PANTALLA // 2 + 40, 480, 180, 70
         )
 
-        # Pantalla de Resultados ---
         self.rect_btn_reiniciar = pygame.Rect(
             const.ANCHO_PANTALLA // 2 - 160, 480, 320, 60
         )
 
-    #PANTALLA 1: MENÚ PRINCIPAL
-    
     def dibujar_menu_principal(self, pantalla) -> None:
         titulo = self.fuente_titulo.render(
             "Juego Educativo: Identifica el Animal", True, const.COLOR_TEXTO_DARK
@@ -99,7 +84,6 @@ class RenderizadorJuego:
         return self.rect_btn_jugar.collidepoint(pos_mouse)
 
     def dibujar_boton_musica(self, pantalla, musica_activa: bool) -> None:
-
         color_fondo = (76, 175, 80) if musica_activa else (180, 180, 180)
         pygame.draw.rect(pantalla, color_fondo, self.rect_btn_musica, border_radius=12)
         pygame.draw.rect(pantalla, (40, 150, 220), self.rect_btn_musica, width=2, border_radius=12)
@@ -110,10 +94,7 @@ class RenderizadorJuego:
         pantalla.blit(txt_musica, m_rect)
 
     def obtener_clic_boton_musica(self, pos_mouse: tuple[int, int]) -> bool:
-        """Devuelve True si se hizo clic en el botón de música."""
         return self.rect_btn_musica.collidepoint(pos_mouse)
-
-    # PANTALLA 2: MENÚ DE ZONAS 
 
     def dibujar_menu_zonas(self, pantalla) -> None:
         titulo = self.fuente_titulo.render(
@@ -126,9 +107,10 @@ class RenderizadorJuego:
             const.ANCHO_PANTALLA // 2,
             const.ALTO_PANTALLA // 2 + 20,
         )
-        pygame.draw.circle(pantalla, (255, 255, 255), (centro_x, centro_y), 90)
+        
+        pygame.draw.circle(pantalla, (255, 255, 255), (centro_x, centro_y), self.radio_centro_nucleo)
         pygame.draw.circle(
-            pantalla, (40, 150, 220), (centro_x, centro_y), 90, width=6
+            pantalla, (40, 150, 220), (centro_x, centro_y), self.radio_centro_nucleo, width=5
         )
 
         nombres_amigables = {
@@ -203,8 +185,6 @@ class RenderizadorJuego:
                 return zona
         return None
 
-    # PANTALLA 3: MENÚ DE MODOS DE JUEGO 
-
     def dibujar_menu_modos(self, pantalla) -> None:
         titulo = self.fuente_titulo.render(
             "Selecciona un Modo de Juego", True, const.COLOR_TEXTO_DARK
@@ -232,19 +212,18 @@ class RenderizadorJuego:
                 return modo
         return None
 
-
     def _inicializar_grilla_rasca(self) -> None:
-       self._bloques_rasca = []
-       ancho_img = 440
-       alto_img = 310
-       centro_img_x = const.ANCHO_PANTALLA // 2
-       centro_img_y = 225
-       
-       x_inicio = centro_img_x - (ancho_img // 2)
-       y_inicio = centro_img_y - (alto_img // 2)
-       tamanio_bloque = 12
-       
-       for x in range(x_inicio, x_inicio + ancho_img, tamanio_bloque):
+        self._bloques_rasca = []
+        ancho_img = 440
+        alto_img = 310
+        centro_img_x = const.ANCHO_PANTALLA // 2
+        centro_img_y = 225
+        
+        x_inicio = centro_img_x - (ancho_img // 2)
+        y_inicio = centro_img_y - (alto_img // 2)
+        tamanio_bloque = 12
+        
+        for x in range(x_inicio, x_inicio + ancho_img, tamanio_bloque):
             for y in range(y_inicio, y_inicio + alto_img, tamanio_bloque):
                 self._bloques_rasca.append(
                     pygame.Rect(x, y, tamanio_bloque, tamanio_bloque)
@@ -255,8 +234,6 @@ class RenderizadorJuego:
             b for b in self._bloques_rasca if not (b.collidepoint(pos_mouse) or 
             (abs(b.centerx - pos_mouse[0]) < 20 and abs(b.centery - pos_mouse[1]) < 20))
         ]
-
-    # PANTALLA 4: JUEGO 
 
     def dibujar_interfaz(
         self, pantalla, carta_actual, puntuacion: int, mensaje: str, revelada: bool = False, modo: str = "normal"
@@ -278,8 +255,6 @@ class RenderizadorJuego:
 
             try:
                 imagen = pygame.image.load(str(ruta_img)).convert()
-                
-                imagen = pygame.image.load(str(ruta_img)).convert()
                 imagen_escalada = pygame.transform.scale(imagen, (ancho_img, alto_img))
                 
                 pos_x = centro_img_x - (ancho_img // 2)
@@ -287,8 +262,7 @@ class RenderizadorJuego:
                         
                 pantalla.blit(imagen_escalada, (pos_x, pos_y))                
 
-
-                if modo == "rasca":      
+                if modo == "rasca":       
                     for bloque in self._bloques_rasca:
                             pygame.draw.rect(pantalla, (150, 150, 150), bloque)
                             pygame.draw.rect(pantalla, (100, 100, 100), bloque, width=1)
@@ -320,13 +294,11 @@ class RenderizadorJuego:
             txt_rect = txt_surf.get_rect(center=rect.center)
             pantalla.blit(txt_surf, txt_rect)
 
-        # Puntuación
         txt_puntos = self.fuente_titulo.render(
             f"Puntuación: {puntuacion}", True, const.COLOR_TEXTO_DARK
         )
         pantalla.blit(txt_puntos, (50, 30))
 
-        # Mensajes de acierto / error
         if mensaje:
             txt_msg = self.fuente_titulo.render(mensaje, True, (46, 125, 50))
             msg_rect = txt_msg.get_rect(center=(const.ANCHO_PANTALLA // 2, 445))
@@ -337,8 +309,6 @@ class RenderizadorJuego:
             if rect.collidepoint(pos_mouse):
                 return self._opciones_actuales[i]
         return None
-
-    # PANTALLA 5: RONDA SÍ / NO 
 
     def dibujar_ronda_sino(
         self,
@@ -391,8 +361,6 @@ class RenderizadorJuego:
             return False
         return None
 
-    # PANTALLA 6: RESULTADOS FINALES 
-
     def dibujar_pantalla_resultados(
         self, pantalla, puntuacion_final: int, total_posible: int, aciertos: int, fallos: int
     ) -> None:
@@ -402,13 +370,11 @@ class RenderizadorJuego:
         t_rect = titulo.get_rect(center=(const.ANCHO_PANTALLA // 2, 140))
         pantalla.blit(titulo, t_rect)
 
-        # Puntuación final
         texto_puntos = f"Puntuación Final: {puntuacion_final} / {total_posible}"
         txt_score = self.fuente_texto.render(texto_puntos, True, (40, 50, 120))
         s_rect = txt_score.get_rect(center=(const.ANCHO_PANTALLA // 2, 210))
         pantalla.blit(txt_score, s_rect)
 
-        # Aciertos y fallos
         txt_aciertos = self.fuente_texto.render(f"Aciertos: {aciertos}", True, (76, 175, 80))
         a_rect = txt_aciertos.get_rect(center=(const.ANCHO_PANTALLA // 2, 270))
         pantalla.blit(txt_aciertos, a_rect)
@@ -417,19 +383,17 @@ class RenderizadorJuego:
         f_rect = txt_fallos.get_rect(center=(const.ANCHO_PANTALLA // 2, 320))
         pantalla.blit(txt_fallos, f_rect)
 
-        # Mensaje dinamico segun la cantidad de aciertos o fallos
         if aciertos >= fallos:
             mensaje = "¡Excelente trabajo! Has demostrado un gran conocimiento."
-            color_msg = (46, 125, 50)  # Verde oscuro de felicitación
+            color_msg = (46, 125, 50)  
         else:
             mensaje = "¡Buen intento! Sigue practicando para mejorar la próxima."
-            color_msg = (211, 47, 47)  # Rojo de aliento
+            color_msg = (211, 47, 47)  
 
         txt_msg = self.fuente_texto.render(mensaje, True, color_msg)
         m_rect = txt_msg.get_rect(center=(const.ANCHO_PANTALLA // 2, 390))
         pantalla.blit(txt_msg, m_rect)
 
-        # Botón para volver al menú
         pygame.draw.rect(
             pantalla, const.COLOR_BOTON, self.rect_btn_reiniciar, border_radius=12
         )
@@ -442,7 +406,6 @@ class RenderizadorJuego:
 
     def obtener_clic_resultados(self, pos_mouse: tuple[int, int]) -> bool:
         return self.rect_btn_reiniciar.collidepoint(pos_mouse)
-
 
     def dibujar_indicadores_progreso(
         self, pantalla, total_preguntas: int, resultados: list[str]
