@@ -1,5 +1,5 @@
 import pygame
-from constants import const, COLORES_BIOMAS
+from constants import const
 from gestor_recursos import GestorRecursos
 from ui_components import (
     crear_etiqueta_glossy,
@@ -11,19 +11,15 @@ from ui_components import (
 class RenderizadorJuego:
 
     def __init__(self):
-        # 1. Carga centralizada de recursos
         self.recursos = GestorRecursos()
         self.fuente_texto = self.recursos.fuente_texto
         self.fuente_titulo = self.recursos.fuente_titulo
 
-        # 2. Geometría y Layout
         self._inicializar_rectangulos()
 
-        # 3. Precaché de botones y badges con UI Components
         self._inicializar_botones_estaticos()
         self._inicializar_badges_biomas()
 
-        # 4. Estado y Caché Dinámica
         self._opciones_actuales = ["", "", "", ""]
         self._surfaces_opciones_actuales = []
         self._ultima_carta_procesada = None
@@ -93,12 +89,11 @@ class RenderizadorJuego:
         }
         self.badges_zonas = {}
         for zona, nombre in nombres_amigables.items():
-            colores = COLORES_BIOMAS.get(zona, {"arriba": (180, 180, 180), "abajo": (80, 80, 80)})
+            colores = const.COLORES_BIOMAS.get(zona, {"arriba": (180, 180, 180), "abajo": (80, 80, 80)})
             self.badges_zonas[zona] = crear_etiqueta_glossy(
                 nombre, self.fuente_texto, colores["arriba"], colores["abajo"]
             )
 
-    # --- MENÚ PRINCIPAL ---
     def dibujar_menu_principal(self, pantalla) -> None:
         titulo = self.fuente_titulo.render("Juego Educativo: Identifica el Animal", True, const.COLOR_TEXTO_DARK)
         pantalla.blit(titulo, titulo.get_rect(center=(const.ANCHO_PANTALLA // 2, 250)))
@@ -114,7 +109,6 @@ class RenderizadorJuego:
     def obtener_clic_boton_musica(self, pos: tuple[int, int]) -> bool:
         return self.rect_btn_musica.collidepoint(pos)
 
-    # --- MENÚ BIOMAS ---
     def dibujar_menu_zonas(self, pantalla) -> None:
         fondo = self.recursos.fondos.get("menu")
         pantalla.blit(fondo, (0, 0)) if fondo else pantalla.fill((230, 240, 250))
@@ -145,7 +139,6 @@ class RenderizadorJuego:
                 return zona
         return None
 
-    # --- MENÚ MODOS ---
     def dibujar_menu_modos(self, pantalla) -> None:
         fondo = self.recursos.fondos.get("modos")
         pantalla.blit(fondo, (0, 0)) if fondo else pantalla.fill((230, 240, 250))
@@ -162,7 +155,6 @@ class RenderizadorJuego:
                 return modo
         return None
 
-    # --- RASCADO ---
     def _inicializar_grilla_rasca(self) -> None:
         self._bloques_rasca = []
         ancho_img, alto_img = 440, 310
@@ -182,7 +174,6 @@ class RenderizadorJuego:
             )
         ]
 
-    # --- INTERFAZ PRINCIPAL DE JUEGO ---
     def dibujar_interfaz(
        self, pantalla, carta_actual, puntuacion: int, mensaje: str, 
        revelada: bool = False, modo: str = "normal", 
@@ -210,20 +201,20 @@ class RenderizadorJuego:
                     carta_actual.nombre_imagen, ancho=440, alto=310
                 )
 
-            pos_x = (pantalla.get_width() // 2) - 220
-            pos_y = 225 - 155
+        pos_x = (pantalla.get_width() // 2) - 220
+        pos_y = 225 - 155
 
-            if self._imagen_actual_escalada:
-                pantalla.blit(self._imagen_actual_escalada, (pos_x, pos_y))
-            else:
-                pygame.draw.rect(pantalla, (220, 220, 220), (pos_x, pos_y, 440, 310))
+        if self._imagen_actual_escalada:
+            pantalla.blit(self._imagen_actual_escalada, (pos_x, pos_y))
+        else:
+            pygame.draw.rect(pantalla, (220, 220, 220), (pos_x, pos_y, 440, 310))
 
-            if modo == "rasca":       
-                for bloque in self._bloques_rasca:
-                    pygame.draw.rect(pantalla, (150, 150, 150), bloque)
-                    pygame.draw.rect(pantalla, (100, 100, 100), bloque, width=1)
-            else:
-                pygame.draw.rect(pantalla, (76, 175, 80), (pos_x, pos_y, 440, 310), width=4, border_radius=8)
+        if modo == "rasca":      
+            for bloque in self._bloques_rasca:
+                pygame.draw.rect(pantalla, (150, 150, 150), bloque)
+                pygame.draw.rect(pantalla, (100, 100, 100), bloque, width=1)
+        else:
+            pygame.draw.rect(pantalla, (76, 175, 80), (pos_x, pos_y, 440, 310), width=4, border_radius=8)
 
         for i, rect in enumerate(self.rects_opciones):
             if i < len(self._surfaces_opciones_actuales):
@@ -248,7 +239,6 @@ class RenderizadorJuego:
                 return self._opciones_actuales[i]
         return None
 
-    # --- RONDA RÁPIDA (SÍ / NO) ---
     def dibujar_ronda_sino(self, pantalla, pregunta_actual, puntuacion: int, mensaje: str) -> None:
         fondo = self.recursos.fondos.get("juego")
         pantalla.blit(fondo, (0, 0)) if fondo else pantalla.fill((240, 240, 240))
@@ -277,7 +267,6 @@ class RenderizadorJuego:
             return False
         return None
 
-    # --- PANTALLA DE RESULTADOS ---
     def dibujar_pantalla_resultados(
         self, pantalla, puntuacion_final: int, total_posible: int, aciertos: int, fallos: int
     ) -> None:
