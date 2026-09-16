@@ -101,11 +101,6 @@ class RenderizadorJuego:
         t_rect = titulo.get_rect(center=(const.ANCHO_PANTALLA // 2, 70))
         pantalla.blit(titulo, t_rect)
 
-        centro_x, centro_y = (
-            const.ANCHO_PANTALLA // 2,
-            const.ALTO_PANTALLA // 2 + 20,
-        )
-
         nombres_amigables = {
             "artico": "Ártico",
             "oceano": "Océano",
@@ -229,7 +224,9 @@ class RenderizadorJuego:
         ]
 
     def dibujar_interfaz(
-        self, pantalla, carta_actual, puntuacion: int, mensaje: str, revelada: bool = False, modo: str = "normal"
+        self, pantalla, carta_actual, puntuacion: int, mensaje: str, 
+        revelada: bool = False, modo: str = "normal", 
+        tiempo_restante: float = 0.0, tiempo_agotado: bool = False
     ) -> None:
         if carta_actual:
             if carta_actual != self._ultima_carta_procesada or (modo == "rasca" and not self._bloques_rasca):
@@ -291,6 +288,13 @@ class RenderizadorJuego:
             f"Puntuación: {puntuacion}", True, const.COLOR_TEXTO_DARK
         )
         pantalla.blit(txt_puntos, (50, 30))
+
+        if modo == "rasca":
+            texto_tiempo = f"Tiempo: {int(tiempo_restante)}s" if not tiempo_agotado else "¡Tiempo agotado!"
+            color_tiempo = (211, 47, 47) if tiempo_agotado else const.COLOR_TEXTO_DARK
+            txt_tiempo = self.fuente_texto.render(texto_tiempo, True, color_tiempo)
+            tiempo_rect = txt_tiempo.get_rect(center=(const.ANCHO_PANTALLA // 2, 40))
+            pantalla.blit(txt_tiempo, tiempo_rect)
 
         if mensaje:
             txt_msg = self.fuente_titulo.render(mensaje, True, (46, 125, 50))
