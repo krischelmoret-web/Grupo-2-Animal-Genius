@@ -20,15 +20,13 @@ class RenderizadorJuego:
         radio_orbita_y = 140  
         radio_circulo_imagen = 95
         
-        self.radio_centro_nucleo = 70
-
         self.zonas_circulos = {
             "pradera": {"centro": (centro_x - radio_orbita_x, centro_y - radio_orbita_y), "radio": radio_circulo_imagen},
             "bosque":  {"centro": (centro_x - radio_orbita_x, centro_y + radio_orbita_y), "radio": radio_circulo_imagen},
             "artico":  {"centro": (centro_x + radio_orbita_x, centro_y - radio_orbita_y), "radio": radio_circulo_imagen},
             "oceano":  {"centro": (centro_x + radio_orbita_x, centro_y + radio_orbita_y), "radio": radio_circulo_imagen},
-            "selva":   {"centro": (centro_x, centro_y + radio_orbita_y + 80), "radio": radio_circulo_imagen},
-        }
+            "selva":   {"centro": (centro_x, centro_y), "radio": radio_circulo_imagen},            
+            }
 
         self.rects_modos = {
             "normal": pygame.Rect(const.ANCHO_PANTALLA // 2 - 175, 250, 350, 60),
@@ -106,11 +104,6 @@ class RenderizadorJuego:
         centro_x, centro_y = (
             const.ANCHO_PANTALLA // 2,
             const.ALTO_PANTALLA // 2 + 20,
-        )
-        
-        pygame.draw.circle(pantalla, (255, 255, 255), (centro_x, centro_y), self.radio_centro_nucleo)
-        pygame.draw.circle(
-            pantalla, (40, 150, 220), (centro_x, centro_y), self.radio_centro_nucleo, width=5
         )
 
         nombres_amigables = {
