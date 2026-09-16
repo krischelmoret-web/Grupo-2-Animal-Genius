@@ -1,13 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-
-COLORES_BIOMAS = {
-    "pradera": {"arriba": (255, 160, 50), "abajo": (180, 80, 15)},
-    "bosque":  {"arriba": (240, 65, 65),  "abajo": (150, 20, 20)},
-    "selva":   {"arriba": (110, 220, 90), "abajo": (35, 130, 45)},
-    "artico":  {"arriba": (185, 125, 245),"abajo": (105, 45, 165)},
-    "oceano":  {"arriba": (85, 165, 255), "abajo": (20, 65, 175)},
-}
+from typing import ClassVar
 
 @dataclass(frozen=True)
 class Constantes():
@@ -45,5 +38,13 @@ class Constantes():
     POS_X_BOTON_IZQ: int = 280
     POS_X_BOTON_DER: int = 700
     TAMANO_BLOQUE_RASCA: int = 25
+
+    COLORES_BIOMAS: ClassVar[dict] = {
+        "pradera": {"arriba": (255, 160, 50), "abajo": (180, 80, 15)},
+        "bosque":  {"arriba": (240, 65, 65),  "abajo": (150, 20, 20)},
+        "selva":   {"arriba": (110, 220, 90), "abajo": (35, 130, 45)},
+        "artico":  {"arriba": (185, 125, 245),"abajo": (105, 45, 165)},
+        "oceano":  {"arriba": (85, 165, 255), "abajo": (20, 65, 175)},
+    }
 
 const = Constantes()
