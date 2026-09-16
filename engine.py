@@ -7,7 +7,6 @@ from visual import RenderizadorJuego
 class MotorJuego:
 
     def __init__(self):
-        # Configuración de pantalla y rendimiento
         self._pantalla = pygame.display.set_mode(
             (const.ANCHO_PANTALLA, const.ALTO_PANTALLA)
         )
@@ -19,12 +18,10 @@ class MotorJuego:
         self._visual = RenderizadorJuego()
         self._album = AlbumCartas()
 
-        # Control de Estados y Modos de Juego
         self._estado = "MENU_PRINCIPAL"
         self._zona_seleccionada = None
         self._modo_juego = None  
 
-        # Variables de juego
         self._indice_actual = 0
         self._puntuacion = 0
         self._aciertos = 0  
@@ -35,10 +32,13 @@ class MotorJuego:
         self._revelando_carta = False
         self._tiempo_revelacion = 0.0
 
-        # Control de música
+        self._duracion_rasca = 4.0          
+        self._tiempo_restante_rasca = 4.0   
+        self._tiempo_agotado_rasca = False  
+        self._esta_rascando = False         
+
         self._musica_activa = True
         
-        # --- CARGA DE SONIDOS Y MÚSICA ---
         try:
             self._sonido_clic = pygame.mixer.Sound(str(const.SOUNDS_DIR / "click.oga"))
             self._sonido_clic.set_volume(1.0)
@@ -73,7 +73,7 @@ class MotorJuego:
                ruta_bioma = const.SOUNDS_DIR / f"{zona}.oga"
                pygame.mixer.music.load(str(ruta_bioma))
                pygame.mixer.music.set_volume(0.8)
-               pygame.mixer.music.play(-1)  # Bucle infinito
+               pygame.mixer.music.play(-1)  
            except Exception as e:
                print(f"Aviso: No se pudo cargar la música de la zona '{zona}': {e}")
 
@@ -110,13 +110,11 @@ class MotorJuego:
 
             elif evento.type == pygame.MOUSEMOTION:
                 if self._estado == "JUGANDO" and self._modo_juego == "rasca":
-                    if not self._revelando_carta:
+                    if not self._revelando_carta and not self._tiempo_agotado_rasca and self._esta_rascando:
                         self._visual.procesar_rasca_mouse(evento.pos)
 
             elif evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
-                # Menú principal
                 if self._estado == "MENU_PRINCIPAL":
-                    # Evaluamos primero el botón de música
                     if self._visual.obtener_clic_boton_musica(evento.pos):
                         self._reproducir_clic()
                         self._alternar_musica()
@@ -124,7 +122,6 @@ class MotorJuego:
                         self._reproducir_clic()
                         self._estado = "SELECCION_ZONA"
 
-                # Elección de zona
                 elif self._estado == "SELECCION_ZONA":
                     zona = self._visual.obtener_clic_zona(evento.pos)
                     if zona:
@@ -136,7 +133,6 @@ class MotorJuego:
                         if not self._musica_activa:
                             pygame.mixer.music.pause()
 
-                # Menú de selección de modos de juego
                 elif self._estado == "SELECCION_MODO":
                     modo = self._visual.obtener_clic_menu_modos(evento.pos)
                     if modo:
@@ -149,22 +145,35 @@ class MotorJuego:
                         self._fallos = 0    
                         self._mensaje_retroalimentacion = ""
                         
-                        if self._modo_juego == "preguntas":
+                        if self._modo_juego == "rasca":
+                            self._tiempo_restante_rasca = self._duracion_rasca
+                            self._tiempo_agotado_rasca = False
+                            self._esta_rascando = False
+                        elif self._modo_juego == "preguntas":
                             self._album.filtrar_preguntas_sino(self._zona_seleccionada)
 
-                # Partida 
                 elif self._estado == "JUGANDO":
-                    if self._modo_juego == "preguntas":
+                    if self._modo_juego == "rasca":
+                        if not self._revelando_carta and not self._tiempo_agotado_rasca:
+                            self._esta_rascando = True
+                            self._visual.procesar_rasca_mouse(evento.pos)
+                        
+                        self._evaluar_clic(evento.pos)
+
+                    elif self._modo_juego == "preguntas":
                         self._evaluar_clic_preguntas(evento.pos)
                     else:
                         self._evaluar_clic(evento.pos)
 
-                # Pantalla de Resultados Finales
                 elif self._estado == "RESULTADOS":
                     if self._visual.obtener_clic_resultados(evento.pos):
                         self._reproducir_clic()
                         self._estado = "MENU_PRINCIPAL"
                         self._reproducir_musica_menu()
+
+            elif evento.type == pygame.MOUSEBUTTONUP and evento.button == 1:
+                if self._estado == "JUGANDO" and self._modo_juego == "rasca":
+                    self._esta_rascando = False
 
     def _evaluar_clic(self, pos_mouse: tuple[int, int]) -> None:
         if self._revelando_carta:
@@ -223,6 +232,14 @@ class MotorJuego:
                 self._tiempo_revelacion = 2.0
 
     def _actualizar(self, dt: float) -> None:
+        if self._estado == "JUGANDO" and self._modo_juego == "rasca" and not self._revelando_carta:
+            if not self._tiempo_agotado_rasca:
+                self._tiempo_restante_rasca -= dt
+                if self._tiempo_restante_rasca <= 0:
+                    self._tiempo_restante_rasca = 0.0
+                    self._tiempo_agotado_rasca = True
+                    self._esta_rascando = False
+
         if self._revelando_carta:
             self._tiempo_revelacion -= dt
             if self._tiempo_revelacion <= 0:
@@ -233,6 +250,11 @@ class MotorJuego:
         self._indice_actual += 1
         self._mensaje_retroalimentacion = ""
         self._visual._ultima_carta_procesada = None
+
+        if self._modo_juego == "rasca":
+            self._tiempo_restante_rasca = self._duracion_rasca
+            self._tiempo_agotado_rasca = False
+            self._esta_rascando = False
 
         if self._modo_juego == "preguntas":
             limite = len(self._album._preguntas_sino_filtradas)
@@ -262,7 +284,6 @@ class MotorJuego:
                     mensaje=self._mensaje_retroalimentacion
                 )
             else:
-                # Modo normal o rasca
                 carta_actual = self._album.obtener_carta(self._indice_actual)
                 self._visual.dibujar_interfaz(
                     self._pantalla,
@@ -270,6 +291,8 @@ class MotorJuego:
                     self._puntuacion,
                     self._mensaje_retroalimentacion,
                     modo=self._modo_juego, 
+                    tiempo_restante=self._tiempo_restante_rasca,
+                    tiempo_agotado=self._tiempo_agotado_rasca
                 )
         elif self._estado == "RESULTADOS":
             if self._modo_juego == "preguntas":
