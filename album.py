@@ -319,27 +319,252 @@ class AlbumCartas:
 
         self._preguntas_sino_totales = [
             PreguntaSiNo(
-                enunciado="¿El oso polar vive en el Ártico?",
+                enunciado="¿Los osos polares saben nadar?",
                 es_verdadero=True,
                 zona="artico",
             ),
             PreguntaSiNo(
-                enunciado="¿El delfín es un mamífero marino?",
+                enunciado="¿Los pingüinos pueden volar por el aire?",
+                es_verdadero=False,
+                zona="artico",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Hace calor en el Polo Norte?",
+                es_verdadero=False,
+                zona="artico",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Los osos polares tienen pelo en el cuerpo?",
+                es_verdadero=True,
+                zona="artico",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Las focas viven cerca del agua helada?",
+                es_verdadero=True,
+                zona="artico",
+            ),
+            PreguntaSiNo(
+                enunciado="¿El zorro ártico es de color verde?",
+                es_verdadero=False,
+                zona="artico",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Las morsas tienen colmillos largos?",
+                es_verdadero=True,
+                zona="artico",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Los renos tienen cuernos en la cabeza?",
+                es_verdadero=True,
+                zona="artico",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Las ballenas son peces?",
+                es_verdadero=False,
+                zona="artico",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Los búhos de las nieves son de color blanco?",
+                es_verdadero=True,
+                zona="artico",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Los delfines necesitan salir a la superficie para respirar aire?",
                 es_verdadero=True,
                 zona="oceano",
             ),
             PreguntaSiNo(
-                enunciado="¿El león habita en la pradera?",
+                enunciado="¿Los tiburones tienen huesos?",
+                es_verdadero=False,
+                zona="oceano",
+            ),
+            PreguntaSiNo(
+                enunciado="¿El pulpo tiene más de un corazón?",
+                es_verdadero=True,
+                zona="oceano",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Los peces pueden respirar bajo el agua?",
+                es_verdadero=True,
+                zona="oceano",
+            ),
+            PreguntaSiNo(
+                enunciado="¿La ballena azul es el animal más grande del planeta?",
+                es_verdadero=True,
+                zona="oceano",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Las estrellas de mar tienen ojos en la cara?",
+                es_verdadero=False,
+                zona="oceano",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Las tortugas marinas ponen sus huevos en la arena de la playa?",
+                es_verdadero=True,
+                zona="oceano",
+            ),
+            PreguntaSiNo(
+                 enunciado="¿Los caballitos de mar son un tipo de pez?",
+                es_verdadero=True,
+                zona="oceano",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Las medusas tienen cerebro y corazón?",
+                es_verdadero=False,
+                zona="oceano",
+            ),
+            PreguntaSiNo(
+                enunciado="¿El agua de los océanos es dulce y se puede beber?",
+                es_verdadero=False,
+                zona="oceano",
+            ),
+            PreguntaSiNo(
+                enunciado="¿El león es un animal carnívoro?",
                 es_verdadero=True,
                 zona="pradera",
             ),
             PreguntaSiNo(
-                enunciado="¿El mono vive comúnmente en la selva?",
+                enunciado="¿La jirafa usa su largo cuello para comer hojas altas?",
+                es_verdadero=True,
+                zona="pradera",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Las cebras son totalmente de color gris?",
+                es_verdadero=False,
+                zona="pradera",
+            ),
+            PreguntaSiNo(
+                enunciado="¿El elefante utiliza su trompa para beber agua?",
+                es_verdadero=True,
+                zona="pradera",
+            ),
+            PreguntaSiNo(
+                enunciado="¿El guepardo es el animal terrestre más rápido?",
+                es_verdadero=True,
+                zona="pradera",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Los avestruces pueden volar por los cielos?",
+                es_verdadero=False,
+                zona="pradera",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Los hipopótamos pasan mucho tiempo en el agua?",
+                es_verdadero=True,
+                zona="pradera",
+            ),
+            PreguntaSiNo(
+                enunciado="¿El rinoceronte tiene un cuerno en la cabeza?",
+                es_verdadero=True,
+                zona="pradera",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Las hienas se alimentan únicamente de hierba?",
+                es_verdadero=False,
+                zona="pradera",
+            ),
+            PreguntaSiNo(
+                enunciado="¿La pradera es un lugar donde cae nieve?",
+                es_verdadero=False,
+                zona="pradera",
+            ),
+            PreguntaSiNo(
+                enunciado="¿El perezoso camina muy rápido?",
+                es_verdadero=False,
+                zona="selva",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Los tucanes tienen un pico grande y de colores?",
                 es_verdadero=True,
                 zona="selva",
             ),
             PreguntaSiNo(
-                enunciado="¿El oso pardo suele habitar en zonas de bosque?",
+                enunciado="¿Los monos saltan de árbol en árbol?",
+                es_verdadero=True,
+                zona="selva",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Las anacondas son aves que vuelan?",
+                es_verdadero=False,
+                zona="selva",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Las guacamayas tienen plumas de colores?",
+                es_verdadero=True,
+                zona="selva",
+            ),
+            PreguntaSiNo(
+                enunciado="¿El gorila come principalmente carne?",
+                es_verdadero=False,
+                zona="selva",
+            ),
+            PreguntaSiNo(
+                enunciado="¿En la selva llueve mucho?",
+                es_verdadero=True,
+                zona="selva",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Las ranas de la selva son todas transparentes?",
+                es_verdadero=False,
+                zona="selva",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Los Osos Ormigueros usan su trompa para comer?",
+                es_verdadero=True,
+                zona="selva",
+            ),
+            PreguntaSiNo(
+                enunciado="¿El perezoso camina muy rápido?",
+                es_verdadero=False,
+                zona="selva",
+            ),
+            PreguntaSiNo(
+                enunciado="¿El oso pardo come peces?",
+                es_verdadero=True,
+                zona="bosque",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Los búhos vuelan de noche?",
+                es_verdadero=True,
+                zona="bosque",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Las ardillas comen nueces?",
+                es_verdadero=True,
+                zona="bosque",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Los ciervos tienen plumas?",
+                es_verdadero=False,
+                zona="bosque",
+            ),
+            PreguntaSiNo(
+                enunciado="¿El lobo aúlla a el sol?",
+                es_verdadero=False,
+                zona="bosque",
+            ),
+            PreguntaSiNo(
+                enunciado="¿El mapache tiene una mancha negra en los ojos?",
+                es_verdadero=True,
+                zona="bosque",
+            ),
+            PreguntaSiNo(
+                enunciado="¿El zorro es de color azul?",
+                es_verdadero=False,
+                zona="bosque",
+            ),
+            PreguntaSiNo(
+                enunciado="¿El pájaro carpintero golpea los árboles con su pico?",
+                es_verdadero=True,
+                zona="bosque",
+            ),
+            PreguntaSiNo(
+                enunciado="¿Los conejos de bosque son carnívoros?",
+                es_verdadero=False,
+                zona="bosque",
+            ),
+            PreguntaSiNo(
+                enunciado="¿En el bosque hay muchos árboles?",
                 es_verdadero=True,
                 zona="bosque",
             ),
