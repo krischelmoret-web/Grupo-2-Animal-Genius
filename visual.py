@@ -4,7 +4,8 @@ from gestor_recursos import GestorRecursos
 from ui_components import (
     crear_etiqueta_glossy,
     crear_boton_glossy,
-    dibujar_indicadores_progreso,
+    dibujar_indicadores_progreso, 
+    aplicar_marco_capsula,
 )
 
 
@@ -183,9 +184,10 @@ class RenderizadorJuego:
         pantalla.blit(fondo, (0, 0)) if fondo else pantalla.fill((240, 240, 240))
 
         if carta_actual:
-            if carta_actual != self._ultima_carta_procesada or (modo == "rasca" and not self._bloques_rasca):
+            # Se compara por el string 'nombre_imagen' para evitar fallos de objeto
+            if self._ultima_carta_procesada != carta_actual.nombre_imagen or (modo == "rasca" and not self._bloques_rasca):
                 self._opciones_actuales = carta_actual.obtener_opciones_mezcladas()
-                self._ultima_carta_procesada = carta_actual
+                self._ultima_carta_procesada = carta_actual.nombre_imagen
 
                 self._surfaces_opciones_actuales = [
                     crear_boton_glossy(
@@ -204,18 +206,28 @@ class RenderizadorJuego:
         pos_x = (pantalla.get_width() // 2) - 220
         pos_y = 225 - 155
 
+        # Renderizar la imagen con marco cápsula
         if self._imagen_actual_escalada:
-            pantalla.blit(self._imagen_actual_escalada, (pos_x, pos_y))
+            if modo == "rasca":
+                pantalla.blit(self._imagen_actual_escalada, (pos_x, pos_y))
+            else:
+                img_con_marco = aplicar_marco_capsula(
+                    self._imagen_actual_escalada, 
+                    radio_borde=30, 
+                    grosor_borde=5
+                )
+                pantalla.blit(img_con_marco, (pos_x, pos_y))
         else:
-            pygame.draw.rect(pantalla, (220, 220, 220), (pos_x, pos_y, 440, 310))
+            pygame.draw.rect(pantalla, (220, 220, 220), (pos_x, pos_y, 440, 310), border_radius=30)
 
+        # Renderizado del modo rasca
         if modo == "rasca":      
             for bloque in self._bloques_rasca:
                 pygame.draw.rect(pantalla, (150, 150, 150), bloque)
                 pygame.draw.rect(pantalla, (100, 100, 100), bloque, width=1)
-        else:
             pygame.draw.rect(pantalla, (76, 175, 80), (pos_x, pos_y, 440, 310), width=4, border_radius=8)
 
+        # Renderizar los botones de opciones
         for i, rect in enumerate(self.rects_opciones):
             if i < len(self._surfaces_opciones_actuales):
                 pantalla.blit(self._surfaces_opciones_actuales[i], rect)
