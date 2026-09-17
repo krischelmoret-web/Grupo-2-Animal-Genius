@@ -147,9 +147,3 @@ def aplicar_marco_capsula(
                 pygame.draw.rect(superficie_final, color_borde, (0, 0, ancho, alto), width=grosor_borde, border_radius=radio_borde)
             
                 return superficie_final
-            color_relleno = (255, 255, 255)
-            color_borde = (76, 175, 80)
-
-        # Dibujar relleno y luego el borde
-        pygame.draw.circle(pantalla, color_relleno, (x, y), radio)
-        pygame.draw.circle(pantalla, color_borde, (x, y), radio, width=2)
