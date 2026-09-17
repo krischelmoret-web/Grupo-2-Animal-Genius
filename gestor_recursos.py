@@ -18,6 +18,7 @@ class GestorRecursos:
 
     def _cargar_fondos(self) -> dict[str, pygame.Surface | None]:
         archivos = {
+            "menu_principal": "fondo_menu_principal.jpg",
             "menu": "fondo_menu.jpg",
             "modos": "fondo_modos.jpg",
             "juego": "fondo_juego.jpg",
@@ -79,4 +80,13 @@ class GestorRecursos:
             return pygame.transform.scale(img, (ancho, alto))
         except Exception as e:
             print(f"Error cargando imagen del animal '{nombre_archivo}': {e}")
+            return None
+
+    def cargar_logo(self, ancho: int = 400, alto: int = 200) -> pygame.Surface | None:
+        ruta = const.BACKGROUNDS_DIR / "logo.png" # Nombre de tu archivo de logo
+        try:
+            img = pygame.image.load(str(ruta)).convert_alpha()
+            return pygame.transform.smoothscale(img, (ancho, alto))
+        except Exception as e:
+            print(f"Error cargando el logo: {e}")
             return None
