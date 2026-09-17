@@ -124,3 +124,32 @@ def dibujar_indicadores_progreso(
         # Dibujar relleno y luego el borde
         pygame.draw.circle(pantalla, color_relleno, (x, y), radio)
         pygame.draw.circle(pantalla, color_borde, (x, y), radio, width=2)
+
+def aplicar_marco_capsula(
+    imagen: pygame.Surface, 
+                radio_borde: int = 25, 
+                grosor_borde: int = 4, 
+                color_borde: tuple = (255, 255, 255)
+            ) -> pygame.Surface:
+                """Recorta una imagen con bordes redondeados y le añade un borde perimetral."""
+                ancho, alto = imagen.get_size()
+                superficie_final = pygame.Surface((ancho, alto), pygame.SRCALPHA)
+            
+                # 1. Crear máscara con bordes redondeados
+                mascara = pygame.Surface((ancho, alto), pygame.SRCALPHA)
+                pygame.draw.rect(mascara, (255, 255, 255, 255), (0, 0, ancho, alto), border_radius=radio_borde)
+            
+                # 2. Aplicar máscara a la imagen
+                superficie_final.blit(imagen, (0, 0))
+                superficie_final.blit(mascara, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+            
+                # 3. Dibujar borde redondeado
+                pygame.draw.rect(superficie_final, color_borde, (0, 0, ancho, alto), width=grosor_borde, border_radius=radio_borde)
+            
+                return superficie_final
+            color_relleno = (255, 255, 255)
+            color_borde = (76, 175, 80)
+
+        # Dibujar relleno y luego el borde
+        pygame.draw.circle(pantalla, color_relleno, (x, y), radio)
+        pygame.draw.circle(pantalla, color_borde, (x, y), radio, width=2)
