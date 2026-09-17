@@ -26,6 +26,7 @@ class RenderizadorJuego:
         self._ultima_carta_procesada = None
         self._imagen_actual_escalada = None
         self._bloques_rasca = []
+        self.surf_logo = self.recursos.cargar_logo(ancho=450, alto=220)
 
     def _inicializar_rectangulos(self) -> None:
         self.rect_btn_jugar = pygame.Rect(const.ANCHO_PANTALLA // 2 - 150, 400, 300, 70)
@@ -96,10 +97,21 @@ class RenderizadorJuego:
             )
 
     def dibujar_menu_principal(self, pantalla) -> None:
-        titulo = self.fuente_titulo.render("Juego Educativo: Identifica el Animal", True, const.COLOR_TEXTO_DARK)
-        pantalla.blit(titulo, titulo.get_rect(center=(const.ANCHO_PANTALLA // 2, 250)))
+        fondo = self.recursos.fondos.get("menu_principal")
+        if fondo:
+            pantalla.blit(fondo, (0, 0))
+        else:
+            pantalla.fill((230, 240, 250))
+                
+        if self.surf_logo:
+            rect_logo = self.surf_logo.get_rect(center=(const.ANCHO_PANTALLA // 2, 220))
+            pantalla.blit(self.surf_logo, rect_logo)
+        else:
+            titulo = self.fuente_titulo.render("Juego Educativo: Identifica el Animal", True, const.COLOR_TEXTO_DARK)
+            pantalla.blit(titulo, titulo.get_rect(center=(const.ANCHO_PANTALLA // 2, 220)))
+                
         pantalla.blit(self.surf_btn_jugar, self.rect_btn_jugar)
-
+        
     def obtener_clic_menu_principal(self, pos_mouse: tuple[int, int]) -> bool:
         return self.rect_btn_jugar.collidepoint(pos_mouse)
 
