@@ -26,23 +26,32 @@ def dibujar_menu_principal(v, pantalla) -> None:
     fondo = v.recursos.fondos.get("menu_principal")
     pantalla.blit(fondo, (0, 0)) if fondo else pantalla.fill((230, 240, 250))
 
-    ancho_p, alto_p = 540, 560
-    x_p, y_p = (const.ANCHO_PANTALLA // 2) - (ancho_p // 2), 35
-    
+    # --- 1. CUADRO TRANSPARENTE ---
+    ancho_p, alto_p = 320, 320
+    x_p = (const.ANCHO_PANTALLA // 2) - (ancho_p // 2)
+    y_p = 290
+
     surf_panel = pygame.Surface((ancho_p, alto_p), pygame.SRCALPHA)
     pygame.draw.rect(surf_panel, (0, 0, 0, 40), (0, 8, ancho_p, alto_p), border_radius=35)
     pygame.draw.rect(surf_panel, (255, 255, 255, 220), (0, 0, ancho_p, alto_p), border_radius=35)
     pygame.draw.rect(surf_panel, (255, 215, 0), (0, 0, ancho_p, alto_p), width=5, border_radius=35)
     pantalla.blit(surf_panel, (x_p, y_p))
 
+    # --- 2. MOVIMIENTO Y DIBUJO DEL LOGO ---
+    tiempo_ticks = pygame.time.get_ticks()
+    # Calculamos la oscilación vertical en píxeles (4px de amplitud)
+    offset_y = int(math.sin(tiempo_ticks * 0.003) * 4) 
+    y_centro_logo = 140 + offset_y  # Se le suma el desplazamiento a la posición base
+
     if v.surf_logo:
-        logo_peq = pygame.transform.smoothscale(v.surf_logo, (350, 150))
-        rect_logo = logo_peq.get_rect(center=(const.ANCHO_PANTALLA // 2, 125))
+        logo_peq = pygame.transform.smoothscale(v.surf_logo, (460, 200))
+        rect_logo = logo_peq.get_rect(center=(const.ANCHO_PANTALLA // 2, y_centro_logo))
         pantalla.blit(logo_peq, rect_logo)
     else:
         titulo = v.fuente_titulo.render("Juego Educativo", True, const.COLOR_TEXTO_DARK)
-        pantalla.blit(titulo, titulo.get_rect(center=(const.ANCHO_PANTALLA // 2, 125)))
+        pantalla.blit(titulo, titulo.get_rect(center=(const.ANCHO_PANTALLA // 2, y_centro_logo)))
 
+    # --- 3. BOTONES Y SLIDERS ---
     v.dibujar_boton_con_hover(pantalla, v.surf_btn_jugar, v.rect_btn_jugar, pos_mouse)
     dibujar_slider(pantalla, v.fuente_texto, "Música", v.rect_slider_musica, v.volumen_musica, pos_mouse)
     dibujar_slider(pantalla, v.fuente_texto, "Efectos", v.rect_slider_efectos, v.volumen_efectos, pos_mouse)
@@ -54,7 +63,7 @@ def dibujar_menu_zonas(v, pantalla) -> None:
     fondo = v.recursos.fondos.get("menu") or v.recursos.fondos.get("menu_principal")
     pantalla.blit(fondo, (0, 0)) if fondo else pantalla.fill((230, 240, 250))
 
-    v._dibujar_letrero_titulo(pantalla, "Elige un lugar para explorar", y_centro=55, ancho=460)
+    v._dibujar_letrero_titulo(pantalla, "¡Elige un lugar para explorar!", y_centro=50, ancho=460)
     tiempo_ticks = pygame.time.get_ticks()
 
     for idx, (bioma, rect_base) in enumerate(v.rects_zonas_tarjetas.items()):
@@ -76,11 +85,12 @@ def dibujar_menu_zonas(v, pantalla) -> None:
         if surf_bioma:
             img_escalada = pygame.transform.smoothscale(surf_bioma, (rect_dibujo.width, rect_dibujo.height))
             tarjeta = aplicar_marco_capsula(img_escalada, radio_borde=22, grosor_borde=5)
+            pantalla.blit(tarjeta, rect_dibujo.topleft)
+            
             if es_hover:
                 brillo_overlay = pygame.Surface(tarjeta.get_size(), pygame.SRCALPHA)
-                brillo_overlay.fill((255, 255, 255, 30))
-                tarjeta.blit(brillo_overlay, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)
-            pantalla.blit(tarjeta, rect_dibujo.topleft)
+                pygame.draw.rect(brillo_overlay, (255, 255, 255, 45), brillo_overlay.get_rect(), border_radius=22)
+                pantalla.blit(brillo_overlay, rect_dibujo.topleft)
         else:
             color_bg = const.COLORES_BIOMAS.get(bioma, {}).get("arriba", (200, 200, 200))
             pygame.draw.rect(pantalla, color_bg, rect_dibujo, border_radius=22)
@@ -113,7 +123,7 @@ def dibujar_pantalla_resultados(v, pantalla, puntuacion_final: int, total_posibl
     pygame.draw.rect(surf_panel, (255, 215, 0), (0, 0, ancho_p, alto_p), width=5, border_radius=35)
     pantalla.blit(surf_panel, (x_p, y_p))
 
-    titulo = v.fuente_titulo.render("¡Juego Terminado!", True, const.COLOR_TEXTO_DARK)
+    titulo = v.fuente_titulo.render("¡Juego terminado!", True, const.COLOR_TEXTO_DARK)
     pantalla.blit(titulo, titulo.get_rect(center=(const.ANCHO_PANTALLA // 2, 140)))
 
     txt_score = v.fuente_titulo.render(f"Puntuación: {puntuacion_final} / {total_posible}", True, (30, 60, 140))
@@ -125,7 +135,7 @@ def dibujar_pantalla_resultados(v, pantalla, puntuacion_final: int, total_posibl
     pantalla.blit(surf_fallos, surf_fallos.get_rect(center=(const.ANCHO_PANTALLA // 2 + 110, 275)))
 
     if aciertos >= fallos:
-        linea1, linea2, color_msg = "¡Excelente trabajo!", "¡Demostraste un gran conocimiento!", (46, 125, 50)
+        linea1, linea2, color_msg = "¡Excelente trabajo!", "Demostraste un gran conocimiento", (46, 125, 50)
     else:
         linea1, linea2, color_msg = "¡No te desanimes!", "Sigue practicando para mejorar.", (211, 47, 47)
 
