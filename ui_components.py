@@ -1,7 +1,6 @@
 import pygame
 
 def crear_etiqueta_glossy(texto: str, fuente: pygame.font.Font, color_arriba: tuple, color_abajo: tuple) -> pygame.Surface:
-    """Genera una placa estilo cápsula/píldora con degradado vertical, brillo glossy y contorno blanco."""
     txt_surf = fuente.render(texto, True, (255, 255, 255))
     tw, th = txt_surf.get_size()
 
@@ -97,12 +96,6 @@ def dibujar_indicadores_progreso(
 ) -> None:
     """
     Dibuja una barra de progreso horizontal con círculos (acierto/fallo/pendiente).
-    
-    :param pantalla: La superficie donde se dibujará.
-    :param x_centro: El punto central en el eje X donde se alineará la barra completa.
-    :param y: La posición en el eje Y.
-    :param total_preguntas: Cantidad total de círculos a dibujar.
-    :param resultados: Lista con cadenas ("acierto", "fallo") de las rondas completadas.
     """
     ancho_total = (total_preguntas * espacio) - (espacio - (radio * 2))
     inicio_x = x_centro - (ancho_total // 2)
@@ -125,25 +118,38 @@ def dibujar_indicadores_progreso(
         pygame.draw.circle(pantalla, color_relleno, (x, y), radio)
         pygame.draw.circle(pantalla, color_borde, (x, y), radio, width=2)
 
+
 def aplicar_marco_capsula(
     imagen: pygame.Surface, 
-                radio_borde: int = 25, 
-                grosor_borde: int = 4, 
-                color_borde: tuple = (255, 255, 255)
-            ) -> pygame.Surface:
-                """Recorta una imagen con bordes redondeados y le añade un borde perimetral."""
-                ancho, alto = imagen.get_size()
-                superficie_final = pygame.Surface((ancho, alto), pygame.SRCALPHA)
-            
-                # 1. Crear máscara con bordes redondeados
-                mascara = pygame.Surface((ancho, alto), pygame.SRCALPHA)
-                pygame.draw.rect(mascara, (255, 255, 255, 255), (0, 0, ancho, alto), border_radius=radio_borde)
-            
-                # 2. Aplicar máscara a la imagen
-                superficie_final.blit(imagen, (0, 0))
-                superficie_final.blit(mascara, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-            
-                # 3. Dibujar borde redondeado
-                pygame.draw.rect(superficie_final, color_borde, (0, 0, ancho, alto), width=grosor_borde, border_radius=radio_borde)
-            
-                return superficie_final
+    radio_borde: int = 25, 
+    grosor_borde: int = 4, 
+    color_borde: tuple = (255, 255, 255)
+) -> pygame.Surface:
+    """Recorta una imagen con bordes redondeados y le añade un borde perimetral."""
+    ancho, alto = imagen.get_size()
+    superficie_final = pygame.Surface((ancho, alto), pygame.SRCALPHA)
+
+    # 1. Crear máscara con bordes redondeados
+    mascara = pygame.Surface((ancho, alto), pygame.SRCALPHA)
+    pygame.draw.rect(mascara, (255, 255, 255, 255), (0, 0, ancho, alto), border_radius=radio_borde)
+
+    # 2. Aplicar máscara a la imagen
+    superficie_final.blit(imagen, (0, 0))
+    superficie_final.blit(mascara, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+
+    # 3. Dibujar borde redondeado
+    pygame.draw.rect(superficie_final, color_borde, (0, 0, ancho, alto), width=grosor_borde, border_radius=radio_borde)
+
+    return superficie_final
+
+
+def crear_boton_volver(fuente: pygame.font.Font) -> pygame.Surface:
+    """Genera el botón estándar de 'Volver' para la esquina superior izquierda."""
+    return crear_boton_glossy(
+        texto="Volver",
+        fuente=fuente,
+        ancho=105,
+        alto=38,
+        color_arriba=(120, 140, 160),
+        color_abajo=(60, 80, 100)
+    )
