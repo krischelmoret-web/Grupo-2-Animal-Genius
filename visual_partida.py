@@ -40,12 +40,14 @@ def dibujar_interfaz(v, pantalla, carta_actual, puntuacion: int, mensaje: str, r
 
     pos_x, pos_y = (pantalla.get_width() // 2) - 210, 135
 
+    # Dibujar la imagen base del animal con su marco
     if v._imagen_actual_escalada:
         img_con_marco = aplicar_marco_capsula(v._imagen_actual_escalada, radio_borde=30, grosor_borde=6)
         pantalla.blit(img_con_marco, (pos_x, pos_y))
     else:
         pygame.draw.rect(pantalla, (220, 220, 220), (pos_x, pos_y, 420, 290), border_radius=30)
 
+    # Dibujar la capa de rascado SOLO si aún existen bloques ocultos
     if modo == "rasca" and v._bloques_rasca:
         surf_rasca = pygame.Surface((420, 290), pygame.SRCALPHA)
         for bloque in v._bloques_rasca:
@@ -98,7 +100,7 @@ def dibujar_ronda_sino(v, pantalla, pregunta_actual, puntuacion: int, mensaje: s
     pantalla.blit(badge_puntos, (30, 30))
 
     if pregunta_actual:
-        txt_preg = v.fuente_titulo.render(pregunta_actual.enunciado, True, (30, 30, 30))
+        txt_preg = v.fuente_titulo.render(pregunta_actual.enunciado, True, (255, 255, 255))
         pantalla.blit(txt_preg, txt_preg.get_rect(center=(const.ANCHO_PANTALLA // 2, 260)))
 
     if mensaje:
