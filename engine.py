@@ -32,13 +32,8 @@ class MotorJuego:
         self._revelando_carta = False
         self._tiempo_revelacion = 0.0
 
-        self._duracion_rasca = 4.0          
-        self._tiempo_restante_rasca = 4.0   
         self._tiempo_agotado_rasca = False  
         self._esta_rascando = False         
-
-        self._musica_activa = True
-        self._efectos_activos = True
         
         try:
             self._sonido_clic = pygame.mixer.Sound(str(const.SOUNDS_DIR / "click.oga"))
@@ -64,33 +59,23 @@ class MotorJuego:
         try:
             ruta_menu = const.SOUNDS_DIR / "menu.oga"
             pygame.mixer.music.load(str(ruta_menu))
-            pygame.mixer.music.set_volume(0.4)
+            pygame.mixer.music.set_volume(self._visual.volumen_musica)
             pygame.mixer.music.play(-1)
         except Exception as e:
             print(f"Aviso: No se pudo cargar la música del menú: {e}")
 
     def _reproducir_musica_bioma(self, zona: str) -> None:
-           try:
-               ruta_bioma = const.SOUNDS_DIR / f"{zona}.oga"
-               pygame.mixer.music.load(str(ruta_bioma))
-               pygame.mixer.music.set_volume(0.4)
-               pygame.mixer.music.play(-1)  
-           except Exception as e:
-               print(f"Aviso: No se pudo cargar la música de la zona '{zona}': {e}")
+        try:
+            ruta_bioma = const.SOUNDS_DIR / f"{zona}.oga"
+            pygame.mixer.music.load(str(ruta_bioma))
+            pygame.mixer.music.set_volume(self._visual.volumen_musica)
+            pygame.mixer.music.play(-1)  
+        except Exception as e:
+            print(f"Aviso: No se pudo cargar la música de la zona '{zona}': {e}")
 
     def _reproducir_clic(self) -> None:
-        if self._efectos_activos and self._sonido_clic:
+        if self._visual.volumen_efectos > 0 and self._sonido_clic:
             self._sonido_clic.play()
-
-    def _alternar_musica(self) -> None:
-        self._musica_activa = not self._musica_activa
-        if self._musica_activa:
-            pygame.mixer.music.unpause()
-        else:
-            pygame.mixer.music.pause()
-
-    def _alternar_efectos(self) -> None:
-        self._efectos_activos = not self._efectos_activos
 
     def ejecutar(self) -> None:
         while self._ejecutando:
@@ -112,29 +97,29 @@ class MotorJuego:
                     self._ejecutando = False
 
             elif evento.type == pygame.MOUSEMOTION:
-                if self._estado == "JUGANDO" and self._modo_juego == "rasca":
+                if self._estado == "MENU_PRINCIPAL":
+                    self._visual.manejar_eventos_menu_principal(evento)
+                elif self._estado == "JUGANDO" and self._modo_juego == "rasca":
                     if not self._revelando_carta and not self._tiempo_agotado_rasca and self._esta_rascando:
-                        self._visual.procesar_rasca_mouse(evento.pos)
+                        limite = int(self._visual._total_bloques_inicial * 0.45)
+                        exito = self._visual.procesar_rasca_mouse(evento.pos, limite)
+                        if not exito:
+                            self._tiempo_agotado_rasca = True
 
             elif evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
                 if self._estado == "MENU_PRINCIPAL":
-                    if self._visual.obtener_clic_boton_musica(evento.pos):
-                        self._reproducir_clic()
-                        self._alternar_musica()
-                    elif self._visual.obtener_clic_boton_efectos(evento.pos):
-                        self._reproducir_clic()
-                        self._alternar_efectos()
-                    elif self._visual.obtener_clic_menu_principal(evento.pos):
+                    accion = self._visual.manejar_eventos_menu_principal(evento)
+                    if accion == "jugar":
                         self._reproducir_clic()
                         self._estado = "SELECCION_ZONA"
+                    elif accion == "salir":
+                        self._ejecutando = False
 
                 elif self._estado == "SELECCION_ZONA":
                     if self._visual.obtener_clic_boton_volver(evento.pos):
                         self._reproducir_clic()
                         self._estado = "MENU_PRINCIPAL"
                         self._reproducir_musica_menu()
-                        if not self._musica_activa:
-                            pygame.mixer.music.pause()
                     else:
                         zona = self._visual.obtener_clic_zona(evento.pos)
                         if zona:
@@ -143,16 +128,12 @@ class MotorJuego:
                             self._album.filtrar_por_zona(zona)
                             self._estado = "SELECCION_MODO"
                             self._reproducir_musica_bioma(zona)
-                            if not self._musica_activa:
-                                pygame.mixer.music.pause()
 
                 elif self._estado == "SELECCION_MODO":
                     if self._visual.obtener_clic_boton_volver(evento.pos):
                         self._reproducir_clic()
                         self._estado = "SELECCION_ZONA"
                         self._reproducir_musica_menu()
-                        if not self._musica_activa:
-                            pygame.mixer.music.pause()
                     else:
                         modo = self._visual.obtener_clic_menu_modos(evento.pos)
                         if modo:
@@ -164,9 +145,9 @@ class MotorJuego:
                             self._aciertos = 0  
                             self._fallos = 0    
                             self._mensaje_retroalimentacion = ""
+                            self._visual.reiniciar_estado_seleccion()
                             
                             if self._modo_juego == "rasca":
-                                self._tiempo_restante_rasca = self._duracion_rasca
                                 self._tiempo_agotado_rasca = False
                                 self._esta_rascando = False
                             elif self._modo_juego == "preguntas":
@@ -176,7 +157,10 @@ class MotorJuego:
                     if self._modo_juego == "rasca":
                         if not self._revelando_carta and not self._tiempo_agotado_rasca:
                             self._esta_rascando = True
-                            self._visual.procesar_rasca_mouse(evento.pos)
+                            limite = int(self._visual._total_bloques_inicial * 0.45)
+                            exito = self._visual.procesar_rasca_mouse(evento.pos, limite)
+                            if not exito:
+                                self._tiempo_agotado_rasca = True
                         
                         self._evaluar_clic(evento.pos)
 
@@ -199,30 +183,27 @@ class MotorJuego:
         if self._revelando_carta:
             return
 
-        opcion_seleccionada = self._visual.obtener_opcion_clic(pos_mouse)
+        indice_opcion, opcion_seleccionada = self._visual.obtener_indice_y_opcion_clic(pos_mouse)
 
-        if opcion_seleccionada:
+        if opcion_seleccionada is not None:
             carta_actual = self._album.obtener_carta(self._indice_actual)
 
-            if (
-                carta_actual
-                and opcion_seleccionada == carta_actual.respuesta_correcta
-            ):
+            if carta_actual and opcion_seleccionada == carta_actual.respuesta_correcta:
                 self._puntuacion += 10
                 self._aciertos += 1
                 self._revelando_carta = True
                 self._tiempo_revelacion = 2.0
                 self._mensaje_retroalimentacion = "¡Muy bien! ¡Correcto!"
-                if self._efectos_activos and self._sonido_correcto:
+                self._visual.marcar_seleccion_usuario(indice_opcion, es_correcto=True)
+                if self._sonido_correcto:
                     self._sonido_correcto.play()
             else:
                 self._fallos += 1
                 self._revelando_carta = True
                 self._tiempo_revelacion = 2.0
-                self._mensaje_retroalimentacion = (
-                    f"Era: {carta_actual.respuesta_correcta}"
-                )
-                if self._efectos_activos and self._sonido_incorrecto:
+                self._mensaje_retroalimentacion = f"Era: {carta_actual.respuesta_correcta}"
+                self._visual.marcar_seleccion_usuario(indice_opcion, es_correcto=False)
+                if self._sonido_incorrecto:
                     self._sonido_incorrecto.play()
 
     def _evaluar_clic_preguntas(self, pos_mouse: tuple[int, int]) -> None:
@@ -240,25 +221,27 @@ class MotorJuego:
                     self._puntuacion += 10
                     self._aciertos += 1
                     self._mensaje_retroalimentacion = "¡Correcto!"
-                    if self._efectos_activos and self._sonido_correcto:
+                    if self._sonido_correcto:
                         self._sonido_correcto.play()
                 else:
                     self._fallos += 1
                     self._mensaje_retroalimentacion = "¡Incorrecto!"
-                    if self._efectos_activos and self._sonido_incorrecto:
+                    if self._sonido_incorrecto:
                         self._sonido_incorrecto.play()
 
                 self._revelando_carta = True
                 self._tiempo_revelacion = 2.0
 
     def _actualizar(self, dt: float) -> None:
-        if self._estado == "JUGANDO" and self._modo_juego == "rasca" and not self._revelando_carta:
-            if not self._tiempo_agotado_rasca:
-                self._tiempo_restante_rasca -= dt
-                if self._tiempo_restante_rasca <= 0:
-                    self._tiempo_restante_rasca = 0.0
-                    self._tiempo_agotado_rasca = True
-                    self._esta_rascando = False
+        pygame.mixer.music.set_volume(self._visual.volumen_musica)
+        vol_efectos = self._visual.volumen_efectos
+        
+        if self._sonido_clic:
+            self._sonido_clic.set_volume(vol_efectos)
+        if self._sonido_correcto:
+            self._sonido_correcto.set_volume(vol_efectos)
+        if self._sonido_incorrecto:
+            self._sonido_incorrecto.set_volume(vol_efectos)
 
         if self._revelando_carta:
             self._tiempo_revelacion -= dt
@@ -270,9 +253,9 @@ class MotorJuego:
         self._indice_actual += 1
         self._mensaje_retroalimentacion = ""
         self._visual._ultima_carta_procesada = None
+        self._visual.reiniciar_estado_seleccion()
 
         if self._modo_juego == "rasca":
-            self._tiempo_restante_rasca = self._duracion_rasca
             self._tiempo_agotado_rasca = False
             self._esta_rascando = False
 
@@ -289,8 +272,6 @@ class MotorJuego:
 
         if self._estado == "MENU_PRINCIPAL":
             self._visual.dibujar_menu_principal(self._pantalla)
-            self._visual.dibujar_boton_musica(self._pantalla, self._musica_activa)
-            self._visual.dibujar_boton_efectos(self._pantalla, self._efectos_activos)
         elif self._estado == "SELECCION_ZONA":
             self._visual.dibujar_menu_zonas(self._pantalla)
         elif self._estado == "SELECCION_MODO":
@@ -312,7 +293,6 @@ class MotorJuego:
                     self._puntuacion,
                     self._mensaje_retroalimentacion,
                     modo=self._modo_juego, 
-                    tiempo_restante=self._tiempo_restante_rasca,
                     tiempo_agotado=self._tiempo_agotado_rasca
                 )
         elif self._estado == "RESULTADOS":
