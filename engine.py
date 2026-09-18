@@ -73,6 +73,16 @@ class MotorJuego:
         except Exception as e:
             print(f"Aviso: No se pudo cargar la música de la zona '{zona}': {e}")
 
+    def _reproducir_musica_resultados(self) -> None:
+        """Carga y reproduce la música de resultados en bucle continuo."""
+        try:
+            ruta_resultados = const.SOUNDS_DIR / "resultados.oga"
+            pygame.mixer.music.load(str(ruta_resultados))
+            pygame.mixer.music.set_volume(self._visual.volumen_musica)
+            pygame.mixer.music.play(-1)
+        except Exception as e:
+            print(f"Aviso: No se pudo cargar la música de resultados: {e}")
+
     def _reproducir_clic(self) -> None:
         if self._visual.volumen_efectos > 0 and self._sonido_clic:
             self._sonido_clic.play()
@@ -186,6 +196,10 @@ class MotorJuego:
         indice_opcion, opcion_seleccionada = self._visual.obtener_indice_y_opcion_clic(pos_mouse)
 
         if opcion_seleccionada is not None:
+            # Revela la imagen por completo si estamos en modo rasca
+            if self._modo_juego == "rasca":
+                self._visual.revelar_imagen_completa()
+
             carta_actual = self._album.obtener_carta(self._indice_actual)
 
             if carta_actual and opcion_seleccionada == carta_actual.respuesta_correcta:
@@ -266,6 +280,7 @@ class MotorJuego:
 
         if self._indice_actual >= limite:
             self._estado = "RESULTADOS"
+            self._reproducir_musica_resultados()
 
     def _dibujar(self) -> None:
         self._pantalla.fill(const.COLOR_FONDO)
