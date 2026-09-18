@@ -1,43 +1,31 @@
 import pygame
 
 def crear_etiqueta_glossy(texto: str, fuente: pygame.font.Font, color_arriba: tuple, color_abajo: tuple) -> pygame.Surface:
-    txt_surf = fuente.render(texto, True, (255, 255, 255))
-    tw, th = txt_surf.get_size()
+    """Crea una cápsula cartoon con excelente legibilidad y sombra 3D suave."""
+    render_texto = fuente.render(texto, True, (255, 255, 255))
+    w_text, h_text = render_texto.get_size()
 
-    pad_x, pad_y = 22, 8
-    w = tw + pad_x * 2
-    h = th + pad_y * 2
+    pad_x, pad_y = 20, 8
+    ancho = w_text + (pad_x * 2)
+    alto = h_text + (pad_y * 2)
 
-    badge = pygame.Surface((w, h), pygame.SRCALPHA)
+    surf = pygame.Surface((ancho, alto + 4), pygame.SRCALPHA)
 
-    # Degradado base
-    grad_1x2 = pygame.Surface((1, 2), pygame.SRCALPHA)
-    grad_1x2.set_at((0, 0), (*color_arriba, 255))
-    grad_1x2.set_at((0, 1), (*color_abajo, 255))
-    grad_surf = pygame.transform.smoothscale(grad_1x2, (w, h))
+    # 1. Base / Sombra 3D
+    pygame.draw.rect(surf, color_abajo, (0, 4, ancho, alto), border_radius=alto // 2)
 
-    # Máscara para bordes redondeados
-    mask = pygame.Surface((w, h), pygame.SRCALPHA)
-    pygame.draw.rect(mask, (255, 255, 255, 255), (0, 0, w, h), border_radius=h // 2)
+    # 2. Frente del Botón
+    pygame.draw.rect(surf, color_arriba, (0, 0, ancho, alto), border_radius=alto // 2)
 
-    grad_surf.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-    badge.blit(grad_surf, (0, 0))
+    # 3. Borde exterior blanco de alto contraste
+    pygame.draw.rect(surf, (255, 255, 255), (0, 0, ancho, alto), width=3, border_radius=alto // 2)
 
-    # Efecto de brillo (glossy) superior
-    brillo = pygame.Surface((w, h), pygame.SRCALPHA)
-    pygame.draw.ellipse(brillo, (255, 255, 255, 110), (4, 2, w - 8, h // 2))
-    brillo.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-    badge.blit(brillo, (0, 0))
+    # 4. Sombra propia del texto para legibilidad
+    sombra_texto = fuente.render(texto, True, (0, 0, 0, 110))
+    surf.blit(sombra_texto, (pad_x + 1, pad_y + 2))
+    surf.blit(render_texto, (pad_x, pad_y))
 
-    # Borde exterior
-    pygame.draw.rect(badge, (255, 255, 255), (0, 0, w, h), width=4, border_radius=h // 2)
-
-    # Texto con sombra
-    sombra = fuente.render(texto, True, (0, 0, 0, 120))
-    badge.blit(sombra, (pad_x + 1, pad_y + 2))
-    badge.blit(txt_surf, (pad_x, pad_y))
-
-    return badge
+    return surf
 
 
 def crear_boton_glossy(
@@ -71,7 +59,7 @@ def crear_boton_glossy(
     btn.blit(brillo, (0, 0))
 
     # Borde exterior
-    pygame.draw.rect(btn, (255, 255, 255), (0, 0, ancho, alto), width=3, border_radius=alto // 2)
+    pygame.draw.rect(btn, (255, 255, 255), (0, 0, ancho, alto), width=5, border_radius=alto // 2)
 
     # Texto centrado con sombra
     txt_surf = fuente.render(texto, True, (255, 255, 255))
@@ -94,9 +82,7 @@ def dibujar_indicadores_progreso(
     radio: int = 10,
     espacio: int = 30
 ) -> None:
-    """
-    Dibuja una barra de progreso horizontal con círculos (acierto/fallo/pendiente).
-    """
+    """Dibuja una barra de progreso horizontal con círculos (acierto/fallo/pendiente)."""
     ancho_total = (total_preguntas * espacio) - (espacio - (radio * 2))
     inicio_x = x_centro - (ancho_total // 2)
 
@@ -114,7 +100,6 @@ def dibujar_indicadores_progreso(
             color_relleno = (255, 255, 255)
             color_borde = (76, 175, 80)
 
-        # Dibujar relleno y luego el borde
         pygame.draw.circle(pantalla, color_relleno, (x, y), radio)
         pygame.draw.circle(pantalla, color_borde, (x, y), radio, width=2)
 
@@ -122,7 +107,7 @@ def dibujar_indicadores_progreso(
 def aplicar_marco_capsula(
     imagen: pygame.Surface, 
     radio_borde: int = 25, 
-    grosor_borde: int = 4, 
+    grosor_borde: int = 6, 
     color_borde: tuple = (255, 255, 255)
 ) -> pygame.Surface:
     """Recorta una imagen con bordes redondeados y le añade un borde perimetral."""
@@ -143,13 +128,40 @@ def aplicar_marco_capsula(
     return superficie_final
 
 
-def crear_boton_volver(fuente: pygame.font.Font) -> pygame.Surface:
-    """Genera el botón estándar de 'Volver' para la esquina superior izquierda."""
-    return crear_boton_glossy(
-        texto="Volver",
-        fuente=fuente,
-        ancho=105,
-        alto=38,
-        color_arriba=(120, 140, 160),
-        color_abajo=(60, 80, 100)
-    )
+def crear_boton_volver(fuente: pygame.font.Font, radio: int = 26) -> pygame.Surface:
+    """Genera un botón circular cartoon con una flecha dibujada por vectores."""
+    diametro = radio * 2
+    btn = pygame.Surface((diametro, diametro), pygame.SRCALPHA)
+
+    # Base circular
+    pygame.draw.circle(btn, (240, 80, 80), (radio, radio), radio)
+    pygame.draw.circle(btn, (180, 30, 30), (radio, radio), radio - 2)
+
+    # Brillo Glossy superior
+    brillo = pygame.Surface((diametro, diametro), pygame.SRCALPHA)
+    pygame.draw.ellipse(brillo, (255, 255, 255, 120), (4, 2, diametro - 8, radio))
+    
+    mascara = pygame.Surface((diametro, diametro), pygame.SRCALPHA)
+    pygame.draw.circle(mascara, (255, 255, 255, 255), (radio, radio), radio)
+    brillo.blit(mascara, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+    btn.blit(brillo, (0, 0))
+
+    # Borde exterior
+    pygame.draw.circle(btn, (255, 255, 255), (radio, radio), radio, width=4)
+
+    # Dibujar la flecha mediante un polígono (Triángulo) y un rectángulo (Cuerpo)
+    color_flecha = (255, 255, 255)
+    cx, cy = radio, radio
+
+    # Cabeza de la flecha
+    puntos_triangulo = [
+        (cx - 10, cy),
+        (cx + 2, cy - 10),
+        (cx + 2, cy + 10)
+    ]
+    pygame.draw.polygon(btn, color_flecha, puntos_triangulo)
+
+    # Cuerpo de la flecha
+    pygame.draw.rect(btn, color_flecha, (cx + 2, cy - 4, 10, 8))
+
+    return btn
