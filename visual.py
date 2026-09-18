@@ -89,7 +89,6 @@ class RenderizadorJuego:
         self.rect_btn_no = pygame.Rect(const.ANCHO_PANTALLA // 2 + 20, 490, 180, 65)
         self.rect_btn_reiniciar = pygame.Rect(const.ANCHO_PANTALLA // 2 - 150, 465, 300, 60)
 
-        # Botón volver posicionado abajo al centro con espacio suficiente
         ancho_v, alto_v = 180, 48
         self.rect_btn_volver = pygame.Rect((const.ANCHO_PANTALLA - ancho_v) // 2, 535, ancho_v, alto_v)
 
