@@ -8,8 +8,8 @@ class Carta(Elemento):
 
     nombre_imagen: str
     respuesta_correcta: str
-    opciones_falsas: list[str]  # 3 opciones falsas
-    zona: str  # Define el bioma ("artico", "oceano", "praderas", etc.)
+    opciones_falsas: list[str]  
+    zona: str  
 
     def cargar_recursos(self) -> None:
         pass
