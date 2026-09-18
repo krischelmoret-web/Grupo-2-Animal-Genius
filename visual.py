@@ -89,6 +89,7 @@ class RenderizadorJuego:
         self.rect_btn_no = pygame.Rect(const.ANCHO_PANTALLA // 2 + 20, 490, 180, 65)
         self.rect_btn_reiniciar = pygame.Rect(const.ANCHO_PANTALLA // 2 - 150, 465, 300, 60)
 
+        # Botón volver posicionado abajo al centro con espacio suficiente
         ancho_v, alto_v = 180, 48
         self.rect_btn_volver = pygame.Rect((const.ANCHO_PANTALLA - ancho_v) // 2, 535, ancho_v, alto_v)
 
@@ -225,6 +226,11 @@ class RenderizadorJuego:
         ]
         return True
 
+    def revelar_imagen_completa(self) -> None:
+        """Vacía completamente los bloques de la capa de rasca para mostrar la imagen completa."""
+        if hasattr(self, "_bloques_rasca") and isinstance(self._bloques_rasca, list):
+            self._bloques_rasca.clear()
+
     # --- INTERFAZ DE PARTIDA Y RESULTADOS ---
     def dibujar_interfaz(self, pantalla, carta_actual, puntuacion: int, mensaje: str, revelada: bool = False, modo: str = "normal", tiempo_restante: float = 0.0, tiempo_agotado: bool = False) -> None:
         visual_partida.dibujar_interfaz(self, pantalla, carta_actual, puntuacion, mensaje, revelada, modo, tiempo_restante, tiempo_agotado)
@@ -254,3 +260,4 @@ class RenderizadorJuego:
 
     def dibujar_indicadores_progreso(self, pantalla, total_preguntas: int, resultados: list[str]) -> None:
         dibujar_indicadores_progreso(pantalla, const.ANCHO_PANTALLA // 2, 440, total_preguntas, resultados)
+        
