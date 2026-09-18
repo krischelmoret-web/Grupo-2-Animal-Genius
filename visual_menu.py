@@ -37,9 +37,8 @@ def dibujar_menu_principal(v, pantalla) -> None:
     pantalla.blit(surf_panel, (x_p, y_p))
 
     tiempo_ticks = pygame.time.get_ticks()
-    # Calculamos la oscilación vertical en píxeles (4px de amplitud)
     offset_y = int(math.sin(tiempo_ticks * 0.003) * 4) 
-    y_centro_logo = 140 + offset_y  # Se le suma el desplazamiento a la posición base
+    y_centro_logo = 140 + offset_y 
 
     if v.surf_logo:
         logo_peq = pygame.transform.smoothscale(v.surf_logo, (460, 200))
