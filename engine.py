@@ -63,7 +63,7 @@ class MotorJuego:
         try:
             ruta_menu = const.SOUNDS_DIR / "menu.oga"
             pygame.mixer.music.load(str(ruta_menu))
-            pygame.mixer.music.set_volume(1.0)
+            pygame.mixer.music.set_volume(0.4)
             pygame.mixer.music.play(-1)
         except Exception as e:
             print(f"Aviso: No se pudo cargar la música del menú: {e}")
@@ -72,7 +72,7 @@ class MotorJuego:
            try:
                ruta_bioma = const.SOUNDS_DIR / f"{zona}.oga"
                pygame.mixer.music.load(str(ruta_bioma))
-               pygame.mixer.music.set_volume(0.8)
+               pygame.mixer.music.set_volume(0.4)
                pygame.mixer.music.play(-1)  
            except Exception as e:
                print(f"Aviso: No se pudo cargar la música de la zona '{zona}': {e}")
@@ -123,34 +123,48 @@ class MotorJuego:
                         self._estado = "SELECCION_ZONA"
 
                 elif self._estado == "SELECCION_ZONA":
-                    zona = self._visual.obtener_clic_zona(evento.pos)
-                    if zona:
+                    if self._visual.obtener_clic_boton_volver(evento.pos):
                         self._reproducir_clic()
-                        self._zona_seleccionada = zona
-                        self._album.filtrar_por_zona(zona)
-                        self._estado = "SELECCION_MODO"
-                        self._reproducir_musica_bioma(zona)
+                        self._estado = "MENU_PRINCIPAL"
+                        self._reproducir_musica_menu()
                         if not self._musica_activa:
                             pygame.mixer.music.pause()
+                    else:
+                        zona = self._visual.obtener_clic_zona(evento.pos)
+                        if zona:
+                            self._reproducir_clic()
+                            self._zona_seleccionada = zona
+                            self._album.filtrar_por_zona(zona)
+                            self._estado = "SELECCION_MODO"
+                            self._reproducir_musica_bioma(zona)
+                            if not self._musica_activa:
+                                pygame.mixer.music.pause()
 
                 elif self._estado == "SELECCION_MODO":
-                    modo = self._visual.obtener_clic_menu_modos(evento.pos)
-                    if modo:
+                    if self._visual.obtener_clic_boton_volver(evento.pos):
                         self._reproducir_clic()
-                        self._modo_juego = modo  
-                        self._estado = "JUGANDO"
-                        self._indice_actual = 0
-                        self._puntuacion = 0
-                        self._aciertos = 0  
-                        self._fallos = 0    
-                        self._mensaje_retroalimentacion = ""
-                        
-                        if self._modo_juego == "rasca":
-                            self._tiempo_restante_rasca = self._duracion_rasca
-                            self._tiempo_agotado_rasca = False
-                            self._esta_rascando = False
-                        elif self._modo_juego == "preguntas":
-                            self._album.filtrar_preguntas_sino(self._zona_seleccionada)
+                        self._estado = "SELECCION_ZONA"
+                        self._reproducir_musica_menu()
+                        if not self._musica_activa:
+                            pygame.mixer.music.pause()
+                    else:
+                        modo = self._visual.obtener_clic_menu_modos(evento.pos)
+                        if modo:
+                            self._reproducir_clic()
+                            self._modo_juego = modo  
+                            self._estado = "JUGANDO"
+                            self._indice_actual = 0
+                            self._puntuacion = 0
+                            self._aciertos = 0  
+                            self._fallos = 0    
+                            self._mensaje_retroalimentacion = ""
+                            
+                            if self._modo_juego == "rasca":
+                                self._tiempo_restante_rasca = self._duracion_rasca
+                                self._tiempo_agotado_rasca = False
+                                self._esta_rascando = False
+                            elif self._modo_juego == "preguntas":
+                                self._album.filtrar_preguntas_sino(self._zona_seleccionada)
 
                 elif self._estado == "JUGANDO":
                     if self._modo_juego == "rasca":
