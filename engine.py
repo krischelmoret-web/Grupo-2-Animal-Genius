@@ -38,6 +38,7 @@ class MotorJuego:
         self._esta_rascando = False         
 
         self._musica_activa = True
+        self._efectos_activos = True
         
         try:
             self._sonido_clic = pygame.mixer.Sound(str(const.SOUNDS_DIR / "click.oga"))
@@ -78,16 +79,18 @@ class MotorJuego:
                print(f"Aviso: No se pudo cargar la música de la zona '{zona}': {e}")
 
     def _reproducir_clic(self) -> None:
-        if self._sonido_clic:
+        if self._efectos_activos and self._sonido_clic:
             self._sonido_clic.play()
 
     def _alternar_musica(self) -> None:
-        """Activa o silencia la música del juego"""
         self._musica_activa = not self._musica_activa
         if self._musica_activa:
             pygame.mixer.music.unpause()
         else:
             pygame.mixer.music.pause()
+
+    def _alternar_efectos(self) -> None:
+        self._efectos_activos = not self._efectos_activos
 
     def ejecutar(self) -> None:
         while self._ejecutando:
@@ -118,6 +121,9 @@ class MotorJuego:
                     if self._visual.obtener_clic_boton_musica(evento.pos):
                         self._reproducir_clic()
                         self._alternar_musica()
+                    elif self._visual.obtener_clic_boton_efectos(evento.pos):
+                        self._reproducir_clic()
+                        self._alternar_efectos()
                     elif self._visual.obtener_clic_menu_principal(evento.pos):
                         self._reproducir_clic()
                         self._estado = "SELECCION_ZONA"
@@ -207,7 +213,7 @@ class MotorJuego:
                 self._revelando_carta = True
                 self._tiempo_revelacion = 2.0
                 self._mensaje_retroalimentacion = "¡Muy bien! ¡Correcto!"
-                if self._sonido_correcto:
+                if self._efectos_activos and self._sonido_correcto:
                     self._sonido_correcto.play()
             else:
                 self._fallos += 1
@@ -216,7 +222,7 @@ class MotorJuego:
                 self._mensaje_retroalimentacion = (
                     f"Era: {carta_actual.respuesta_correcta}"
                 )
-                if self._sonido_incorrecto:
+                if self._efectos_activos and self._sonido_incorrecto:
                     self._sonido_incorrecto.play()
 
     def _evaluar_clic_preguntas(self, pos_mouse: tuple[int, int]) -> None:
@@ -234,12 +240,12 @@ class MotorJuego:
                     self._puntuacion += 10
                     self._aciertos += 1
                     self._mensaje_retroalimentacion = "¡Correcto!"
-                    if self._sonido_correcto:
+                    if self._efectos_activos and self._sonido_correcto:
                         self._sonido_correcto.play()
                 else:
                     self._fallos += 1
                     self._mensaje_retroalimentacion = "¡Incorrecto!"
-                    if self._sonido_incorrecto:
+                    if self._efectos_activos and self._sonido_incorrecto:
                         self._sonido_incorrecto.play()
 
                 self._revelando_carta = True
@@ -284,6 +290,7 @@ class MotorJuego:
         if self._estado == "MENU_PRINCIPAL":
             self._visual.dibujar_menu_principal(self._pantalla)
             self._visual.dibujar_boton_musica(self._pantalla, self._musica_activa)
+            self._visual.dibujar_boton_efectos(self._pantalla, self._efectos_activos)
         elif self._estado == "SELECCION_ZONA":
             self._visual.dibujar_menu_zonas(self._pantalla)
         elif self._estado == "SELECCION_MODO":
