@@ -201,7 +201,7 @@ class MotorJuego:
                 self._fallos += 1
                 self._revelando_carta = True
                 self._tiempo_revelacion = 2.0
-                self._mensaje_retroalimentacion = f"Era: {carta_actual.respuesta_correcta}"
+                self._mensaje_retroalimentacion = f"¡Tranquilo! Era: {carta_actual.respuesta_correcta}"
                 self._visual.marcar_seleccion_usuario(indice_opcion, es_correcto=False)
                 if self._sonido_incorrecto:
                     self._sonido_incorrecto.play()
@@ -220,12 +220,12 @@ class MotorJuego:
                 if es_correcto:
                     self._puntuacion += 10
                     self._aciertos += 1
-                    self._mensaje_retroalimentacion = "¡Correcto!"
+                    self._mensaje_retroalimentacion = "¡Muy bien! ¡Correcto!"
                     if self._sonido_correcto:
                         self._sonido_correcto.play()
                 else:
                     self._fallos += 1
-                    self._mensaje_retroalimentacion = "¡Incorrecto!"
+                    self._mensaje_retroalimentacion = "¡Tranquilo! Era: Sí"
                     if self._sonido_incorrecto:
                         self._sonido_incorrecto.play()
 
