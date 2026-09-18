@@ -10,16 +10,12 @@ def crear_etiqueta_glossy(texto: str, fuente: pygame.font.Font, color_arriba: tu
 
     surf = pygame.Surface((ancho, alto + 4), pygame.SRCALPHA)
 
-    # 1. Base / Sombra 3D
     pygame.draw.rect(surf, color_abajo, (0, 4, ancho, alto), border_radius=alto // 2)
 
-    # 2. Frente del Botón
     pygame.draw.rect(surf, color_arriba, (0, 0, ancho, alto), border_radius=alto // 2)
 
-    # 3. Borde exterior blanco de alto contraste
     pygame.draw.rect(surf, (255, 255, 255), (0, 0, ancho, alto), width=3, border_radius=alto // 2)
 
-    # 4. Sombra propia del texto para legibilidad
     sombra_texto = fuente.render(texto, True, (0, 0, 0, 110))
     surf.blit(sombra_texto, (pad_x + 1, pad_y + 2))
     surf.blit(render_texto, (pad_x, pad_y))
