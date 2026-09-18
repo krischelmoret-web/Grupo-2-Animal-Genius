@@ -17,10 +17,8 @@ class GestorRecursos:
             self.fuente_titulo = pygame.font.SysFont("Comic Sans MS", 32)
             self.fuente_texto = pygame.font.SysFont("Comic Sans MS", 22)
 
-        # 1. Carga de Fondos Principales
         self.fondos = self._cargar_fondos()
 
-        # 2. Carga de Fondos Rectangulares para las Tarjetas de Biomas
         self.fondos_biomas = self._cargar_fondos_biomas()
 
     def _cargar_fondos(self) -> dict[str, pygame.Surface | None]:
@@ -46,7 +44,6 @@ class GestorRecursos:
         return fondos
 
     def _cargar_fondos_biomas(self) -> dict[str, pygame.Surface | None]:
-        # Si tus imágenes son .png cambia las extensiones a .png
         archivos_biomas = {
             "pradera": "pradera.jpg",
             "bosque": "bosque.jpg",
