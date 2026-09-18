@@ -31,8 +31,9 @@ class RenderizadorJuego:
         self.surf_logo = self.recursos.cargar_logo(ancho=450, alto=220)
 
     def _inicializar_rectangulos(self) -> None:
-        self.rect_btn_jugar = pygame.Rect(const.ANCHO_PANTALLA // 2 - 150, 400, 300, 70)
-        self.rect_btn_musica = pygame.Rect(const.ANCHO_PANTALLA // 2 - 150, 490, 300, 50)
+        self.rect_btn_jugar = pygame.Rect(const.ANCHO_PANTALLA // 2 - 150, 360, 300, 65)
+        self.rect_btn_musica = pygame.Rect(const.ANCHO_PANTALLA // 2 - 150, 440, 300, 48)
+        self.rect_btn_efectos = pygame.Rect(const.ANCHO_PANTALLA // 2 - 150, 500, 300, 48)
 
         centro_x, centro_y = const.ANCHO_PANTALLA // 2, const.ALTO_PANTALLA // 2 + 20
         radio_orbita_x, radio_orbita_y = 340, 140
@@ -69,14 +70,22 @@ class RenderizadorJuego:
 
     def _inicializar_botones_estaticos(self) -> None:
         self.surf_btn_jugar = crear_boton_glossy(
-            "JUGAR", self.fuente_titulo, 300, 70, (110, 220, 90), (35, 130, 45)
+            "JUGAR", self.fuente_titulo, 300, 65, (110, 220, 90), (35, 130, 45)
         )
         self.surf_btn_musica_on = crear_boton_glossy(
-            "Música: Activada", self.fuente_texto, 300, 50, (110, 220, 90), (35, 130, 45)
+            "Música: Activada", self.fuente_texto, 300, 48, (110, 220, 90), (35, 130, 45)
         )
         self.surf_btn_musica_off = crear_boton_glossy(
-            "Música: Silenciada", self.fuente_texto, 300, 50, (190, 190, 190), (100, 100, 100)
+            "Música: Silenciada", self.fuente_texto, 300, 48, (190, 190, 190), (100, 100, 100)
         )
+        
+        self.surf_btn_efectos_on = crear_boton_glossy(
+            "Efectos: Activados", self.fuente_texto, 300, 48, (110, 220, 90), (35, 130, 45)
+        )
+        self.surf_btn_efectos_off = crear_boton_glossy(
+            "Efectos: Silenciados", self.fuente_texto, 300, 48, (190, 190, 190), (100, 100, 100)
+        )
+
         self.surfs_btn_modos = {
             "normal": crear_boton_glossy("Modo Normal (Clásico)", self.fuente_texto, 350, 60, (85, 165, 255), (20, 65, 175)),
             "preguntas": crear_boton_glossy("Modo Preguntas (Sí / No)", self.fuente_texto, 350, 60, (85, 165, 255), (20, 65, 175)),
@@ -86,7 +95,6 @@ class RenderizadorJuego:
         self.surf_btn_no = crear_boton_glossy("NO", self.fuente_titulo, 180, 70, (240, 65, 65), (150, 20, 20))
         self.surf_btn_reiniciar = crear_boton_glossy("Volver al Menú", self.fuente_texto, 320, 60, (85, 165, 255), (20, 65, 175))
 
-        # Botón Volver estándar para menús
         self.surf_btn_volver = crear_boton_volver(self.fuente_texto)
         self.rect_btn_volver = self.surf_btn_volver.get_rect(topleft=(20, 20))
 
@@ -110,11 +118,11 @@ class RenderizadorJuego:
             pantalla.fill((230, 240, 250))
                 
         if self.surf_logo:
-            rect_logo = self.surf_logo.get_rect(center=(const.ANCHO_PANTALLA // 2, 220))
+            rect_logo = self.surf_logo.get_rect(center=(const.ANCHO_PANTALLA // 2, 190))
             pantalla.blit(self.surf_logo, rect_logo)
         else:
             titulo = self.fuente_titulo.render("Juego Educativo: Identifica el Animal", True, const.COLOR_TEXTO_DARK)
-            pantalla.blit(titulo, titulo.get_rect(center=(const.ANCHO_PANTALLA // 2, 220)))
+            pantalla.blit(titulo, titulo.get_rect(center=(const.ANCHO_PANTALLA // 2, 190)))
                 
         pantalla.blit(self.surf_btn_jugar, self.rect_btn_jugar)
 
@@ -127,6 +135,13 @@ class RenderizadorJuego:
 
     def obtener_clic_boton_musica(self, pos: tuple[int, int]) -> bool:
         return self.rect_btn_musica.collidepoint(pos)
+
+    def dibujar_boton_efectos(self, pantalla, efectos_activos: bool) -> None:
+        btn = self.surf_btn_efectos_on if efectos_activos else self.surf_btn_efectos_off
+        pantalla.blit(btn, self.rect_btn_efectos)
+
+    def obtener_clic_boton_efectos(self, pos: tuple[int, int]) -> bool:
+        return self.rect_btn_efectos.collidepoint(pos)
 
     def dibujar_menu_zonas(self, pantalla) -> None:
         fondo = self.recursos.fondos.get("menu")
@@ -150,7 +165,6 @@ class RenderizadorJuego:
             badge = self.badges_zonas[zona]
             pantalla.blit(badge, badge.get_rect(center=(cx, cy + r - 10)))
 
-        # Dibujar botón Volver en la esquina superior izquierda
         pantalla.blit(self.surf_btn_volver, self.rect_btn_volver)
 
     def obtener_clic_zona(self, pos_mouse: tuple[int, int]) -> str | None:
@@ -171,7 +185,6 @@ class RenderizadorJuego:
         for modo, rect in self.rects_modos.items():
             pantalla.blit(self.surfs_btn_modos[modo], rect)
 
-        # Dibujar botón Volver en la esquina superior izquierda
         pantalla.blit(self.surf_btn_volver, self.rect_btn_volver)
 
     def obtener_clic_menu_modos(self, pos_mouse: tuple[int, int]) -> str | None:
@@ -181,7 +194,6 @@ class RenderizadorJuego:
         return None
 
     def obtener_clic_boton_volver(self, pos_mouse: tuple[int, int]) -> bool:
-        """Verifica si se hizo clic en el botón Volver de la esquina superior izquierda."""
         return self.rect_btn_volver.collidepoint(pos_mouse)
 
     def _inicializar_grilla_rasca(self) -> None:
@@ -246,7 +258,7 @@ class RenderizadorJuego:
         else:
             pygame.draw.rect(pantalla, (220, 220, 220), (pos_x, pos_y, 440, 310), border_radius=30)
 
-        if modo == "rasca":      
+        if modo == "rasca":       
             for bloque in self._bloques_rasca:
                 pygame.draw.rect(pantalla, (150, 150, 150), bloque)
                 pygame.draw.rect(pantalla, (100, 100, 100), bloque, width=1)
