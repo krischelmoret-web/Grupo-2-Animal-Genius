@@ -26,7 +26,6 @@ def dibujar_menu_principal(v, pantalla) -> None:
     fondo = v.recursos.fondos.get("menu_principal")
     pantalla.blit(fondo, (0, 0)) if fondo else pantalla.fill((230, 240, 250))
 
-    # --- 1. CUADRO TRANSPARENTE ---
     ancho_p, alto_p = 320, 320
     x_p = (const.ANCHO_PANTALLA // 2) - (ancho_p // 2)
     y_p = 290
@@ -37,7 +36,6 @@ def dibujar_menu_principal(v, pantalla) -> None:
     pygame.draw.rect(surf_panel, (255, 215, 0), (0, 0, ancho_p, alto_p), width=5, border_radius=35)
     pantalla.blit(surf_panel, (x_p, y_p))
 
-    # --- 2. MOVIMIENTO Y DIBUJO DEL LOGO ---
     tiempo_ticks = pygame.time.get_ticks()
     # Calculamos la oscilación vertical en píxeles (4px de amplitud)
     offset_y = int(math.sin(tiempo_ticks * 0.003) * 4) 
@@ -51,7 +49,6 @@ def dibujar_menu_principal(v, pantalla) -> None:
         titulo = v.fuente_titulo.render("Juego Educativo", True, const.COLOR_TEXTO_DARK)
         pantalla.blit(titulo, titulo.get_rect(center=(const.ANCHO_PANTALLA // 2, y_centro_logo)))
 
-    # --- 3. BOTONES Y SLIDERS ---
     v.dibujar_boton_con_hover(pantalla, v.surf_btn_jugar, v.rect_btn_jugar, pos_mouse)
     dibujar_slider(pantalla, v.fuente_texto, "Música", v.rect_slider_musica, v.volumen_musica, pos_mouse)
     dibujar_slider(pantalla, v.fuente_texto, "Efectos", v.rect_slider_efectos, v.volumen_efectos, pos_mouse)
