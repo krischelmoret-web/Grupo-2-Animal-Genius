@@ -74,7 +74,6 @@ class MotorJuego:
             print(f"Aviso: No se pudo cargar la música de la zona '{zona}': {e}")
 
     def _reproducir_musica_resultados(self) -> None:
-        """Carga y reproduce la música de resultados en bucle continuo."""
         try:
             ruta_resultados = const.SOUNDS_DIR / "resultados.oga"
             pygame.mixer.music.load(str(ruta_resultados))
