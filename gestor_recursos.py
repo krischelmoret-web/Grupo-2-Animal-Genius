@@ -1,20 +1,27 @@
 import pygame
+from pathlib import Path
 from constants import const
 
 
 class GestorRecursos:
 
     def __init__(self):
-        # 1. Carga de Fuentes
-        ruta_fuente = const.FONTS_DIR / "comic.ttf"
-        self.fuente_texto = pygame.font.Font(str(ruta_fuente), 24)
-        self.fuente_titulo = pygame.font.Font(str(ruta_fuente), 32)
+        base_dir = Path(__file__).resolve().parent
+        ruta_fuente = base_dir / "assets" / "fonts" / "Fredoka.ttf"
 
-        # 2. Carga y Escalado de Fondos
+        try:
+            self.fuente_titulo = pygame.font.Font(str(ruta_fuente), 32)
+            self.fuente_texto = pygame.font.Font(str(ruta_fuente), 22)
+        except (FileNotFoundError, OSError) as e:
+            print(f"No se pudo cargar la fuente en '{ruta_fuente}': {e}. Usando fuente predeterminada.")
+            self.fuente_titulo = pygame.font.SysFont("Comic Sans MS", 32)
+            self.fuente_texto = pygame.font.SysFont("Comic Sans MS", 22)
+
+        # 1. Carga de Fondos Principales
         self.fondos = self._cargar_fondos()
 
-        # 3. Carga y Recorte Circular de Biomas
-        self.circulos_biomas = self._cargar_circulos_biomas(radio=95)
+        # 2. Carga de Fondos Rectangulares para las Tarjetas de Biomas
+        self.fondos_biomas = self._cargar_fondos_biomas()
 
     def _cargar_fondos(self) -> dict[str, pygame.Surface | None]:
         archivos = {
@@ -38,7 +45,8 @@ class GestorRecursos:
 
         return fondos
 
-    def _cargar_circulos_biomas(self, radio: int) -> dict[str, pygame.Surface | None]:
+    def _cargar_fondos_biomas(self) -> dict[str, pygame.Surface | None]:
+        # Si tus imágenes son .png cambia las extensiones a .png
         archivos_biomas = {
             "pradera": "pradera.jpg",
             "bosque": "bosque.jpg",
@@ -46,27 +54,15 @@ class GestorRecursos:
             "artico": "artico.jpg",
             "oceano": "oceano.jpg",
         }
-        diametro = radio * 2
         surfaces = {}
 
         for bioma, archivo in archivos_biomas.items():
             ruta = const.BACKGROUNDS_DIR / archivo
             try:
                 img_base = pygame.image.load(str(ruta)).convert()
-                img_escalada = pygame.transform.smoothscale(
-                    img_base, (diametro, diametro)
-                ).convert_alpha()
-
-                # Aplicar máscara circular con canal Alpha
-                superficie_final = pygame.Surface((diametro, diametro), pygame.SRCALPHA)
-                mascara = pygame.Surface((diametro, diametro), pygame.SRCALPHA)
-                pygame.draw.circle(mascara, (255, 255, 255, 255), (radio, radio), radio)
-
-                superficie_final.blit(img_escalada, (0, 0))
-                superficie_final.blit(mascara, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-                surfaces[bioma] = superficie_final
+                surfaces[bioma] = img_base
             except Exception as e:
-                print(f"Error procesando imagen de bioma '{bioma}': {e}")
+                print(f"Error procesando imagen de bioma '{bioma}' en {ruta}: {e}")
                 surfaces[bioma] = None
 
         return surfaces
@@ -83,7 +79,7 @@ class GestorRecursos:
             return None
 
     def cargar_logo(self, ancho: int = 400, alto: int = 200) -> pygame.Surface | None:
-        ruta = const.BACKGROUNDS_DIR / "logo.png" # Nombre de tu archivo de logo
+        ruta = const.BACKGROUNDS_DIR / "logo.png"
         try:
             img = pygame.image.load(str(ruta)).convert_alpha()
             return pygame.transform.smoothscale(img, (ancho, alto))
