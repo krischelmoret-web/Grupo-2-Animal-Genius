@@ -1,7 +1,6 @@
 import pygame
 
 def crear_etiqueta_glossy(texto: str, fuente: pygame.font.Font, color_arriba: tuple, color_abajo: tuple) -> pygame.Surface:
-    """Crea una cápsula cartoon con excelente legibilidad y sombra 3D suave."""
     render_texto = fuente.render(texto, True, (255, 255, 255))
     w_text, h_text = render_texto.get_size()
 
@@ -36,32 +35,26 @@ def crear_boton_glossy(
     color_arriba: tuple = (100, 200, 255), 
     color_abajo: tuple = (30, 100, 200)
 ) -> pygame.Surface:
-    """Genera un botón con forma de píldora, degradado lineal, efecto bisel y texto."""
     btn = pygame.Surface((ancho, alto), pygame.SRCALPHA)
 
-    # Degradado base
     grad_1x2 = pygame.Surface((1, 2), pygame.SRCALPHA)
     grad_1x2.set_at((0, 0), (*color_arriba, 255))
     grad_1x2.set_at((0, 1), (*color_abajo, 255))
     grad_surf = pygame.transform.smoothscale(grad_1x2, (ancho, alto))
 
-    # Máscara para bordes redondeados
     mask = pygame.Surface((ancho, alto), pygame.SRCALPHA)
     pygame.draw.rect(mask, (255, 255, 255, 255), (0, 0, ancho, alto), border_radius=alto // 2)
 
     grad_surf.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
     btn.blit(grad_surf, (0, 0))
 
-    # Efecto de brillo (glossy)
     brillo = pygame.Surface((ancho, alto), pygame.SRCALPHA)
     pygame.draw.ellipse(brillo, (255, 255, 255, 100), (6, 2, ancho - 12, alto // 2))
     brillo.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
     btn.blit(brillo, (0, 0))
 
-    # Borde exterior
     pygame.draw.rect(btn, (255, 255, 255), (0, 0, ancho, alto), width=5, border_radius=alto // 2)
 
-    # Texto centrado con sombra
     txt_surf = fuente.render(texto, True, (255, 255, 255))
     sombra = fuente.render(texto, True, (0, 0, 0))
     sombra.set_alpha(120)
@@ -82,7 +75,6 @@ def dibujar_indicadores_progreso(
     radio: int = 10,
     espacio: int = 30
 ) -> None:
-    """Dibuja una barra de progreso horizontal con círculos (acierto/fallo/pendiente)."""
     ancho_total = (total_preguntas * espacio) - (espacio - (radio * 2))
     inicio_x = x_centro - (ancho_total // 2)
 
@@ -110,19 +102,15 @@ def aplicar_marco_capsula(
     grosor_borde: int = 6, 
     color_borde: tuple = (255, 255, 255)
 ) -> pygame.Surface:
-    """Recorta una imagen con bordes redondeados y le añade un borde perimetral."""
     ancho, alto = imagen.get_size()
     superficie_final = pygame.Surface((ancho, alto), pygame.SRCALPHA)
 
-    # 1. Crear máscara con bordes redondeados
     mascara = pygame.Surface((ancho, alto), pygame.SRCALPHA)
     pygame.draw.rect(mascara, (255, 255, 255, 255), (0, 0, ancho, alto), border_radius=radio_borde)
 
-    # 2. Aplicar máscara a la imagen
     superficie_final.blit(imagen, (0, 0))
     superficie_final.blit(mascara, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
 
-    # 3. Dibujar borde redondeado
     pygame.draw.rect(superficie_final, color_borde, (0, 0, ancho, alto), width=grosor_borde, border_radius=radio_borde)
 
     return superficie_final
@@ -136,16 +124,12 @@ def crear_boton_capsula_volver(
     color_arriba: tuple = (235, 75, 75), 
     color_abajo: tuple = (180, 40, 40)
 ) -> pygame.Surface:
-    """Genera un botón con forma de cápsula roja redondeada y borde blanco para el regreso."""
     surf = pygame.Surface((ancho, alto), pygame.SRCALPHA)
 
-    # 1. Base / Sombra 3D
     pygame.draw.rect(surf, color_abajo, (0, 4, ancho, alto - 4), border_radius=alto // 2)
 
-    # 2. Frente del Botón
     pygame.draw.rect(surf, color_arriba, (0, 0, ancho, alto - 4), border_radius=alto // 2)
 
-    # 3. Brillo superior (Glossy)
     brillo = pygame.Surface((ancho, alto), pygame.SRCALPHA)
     pygame.draw.ellipse(brillo, (255, 255, 255, 90), (6, 2, ancho - 12, (alto - 4) // 2))
     
@@ -154,10 +138,8 @@ def crear_boton_capsula_volver(
     brillo.blit(mascara, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
     surf.blit(brillo, (0, 0))
 
-    # 4. Borde exterior blanco
     pygame.draw.rect(surf, (255, 255, 255), (0, 0, ancho, alto - 4), width=3, border_radius=alto // 2)
 
-    # 5. Texto renderizado
     txt_surf = fuente.render(texto, True, (255, 255, 255))
     sombra = fuente.render(texto, True, (0, 0, 0, 110))
     t_rect = txt_surf.get_rect(center=(ancho // 2, (alto - 4) // 2))
