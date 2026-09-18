@@ -128,40 +128,41 @@ def aplicar_marco_capsula(
     return superficie_final
 
 
-def crear_boton_volver(fuente: pygame.font.Font, radio: int = 26) -> pygame.Surface:
-    """Genera un botón circular cartoon con una flecha dibujada por vectores."""
-    diametro = radio * 2
-    btn = pygame.Surface((diametro, diametro), pygame.SRCALPHA)
+def crear_boton_capsula_volver(
+    texto: str, 
+    fuente: pygame.font.Font, 
+    ancho: int = 180, 
+    alto: int = 48,
+    color_arriba: tuple = (235, 75, 75), 
+    color_abajo: tuple = (180, 40, 40)
+) -> pygame.Surface:
+    """Genera un botón con forma de cápsula roja redondeada y borde blanco para el regreso."""
+    surf = pygame.Surface((ancho, alto), pygame.SRCALPHA)
 
-    # Base circular
-    pygame.draw.circle(btn, (240, 80, 80), (radio, radio), radio)
-    pygame.draw.circle(btn, (180, 30, 30), (radio, radio), radio - 2)
+    # 1. Base / Sombra 3D
+    pygame.draw.rect(surf, color_abajo, (0, 4, ancho, alto - 4), border_radius=alto // 2)
 
-    # Brillo Glossy superior
-    brillo = pygame.Surface((diametro, diametro), pygame.SRCALPHA)
-    pygame.draw.ellipse(brillo, (255, 255, 255, 120), (4, 2, diametro - 8, radio))
+    # 2. Frente del Botón
+    pygame.draw.rect(surf, color_arriba, (0, 0, ancho, alto - 4), border_radius=alto // 2)
+
+    # 3. Brillo superior (Glossy)
+    brillo = pygame.Surface((ancho, alto), pygame.SRCALPHA)
+    pygame.draw.ellipse(brillo, (255, 255, 255, 90), (6, 2, ancho - 12, (alto - 4) // 2))
     
-    mascara = pygame.Surface((diametro, diametro), pygame.SRCALPHA)
-    pygame.draw.circle(mascara, (255, 255, 255, 255), (radio, radio), radio)
+    mascara = pygame.Surface((ancho, alto), pygame.SRCALPHA)
+    pygame.draw.rect(mascara, (255, 255, 255, 255), (0, 0, ancho, alto - 4), border_radius=alto // 2)
     brillo.blit(mascara, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-    btn.blit(brillo, (0, 0))
+    surf.blit(brillo, (0, 0))
 
-    # Borde exterior
-    pygame.draw.circle(btn, (255, 255, 255), (radio, radio), radio, width=4)
+    # 4. Borde exterior blanco
+    pygame.draw.rect(surf, (255, 255, 255), (0, 0, ancho, alto - 4), width=3, border_radius=alto // 2)
 
-    # Dibujar la flecha mediante un polígono (Triángulo) y un rectángulo (Cuerpo)
-    color_flecha = (255, 255, 255)
-    cx, cy = radio, radio
+    # 5. Texto renderizado
+    txt_surf = fuente.render(texto, True, (255, 255, 255))
+    sombra = fuente.render(texto, True, (0, 0, 0, 110))
+    t_rect = txt_surf.get_rect(center=(ancho // 2, (alto - 4) // 2))
 
-    # Cabeza de la flecha
-    puntos_triangulo = [
-        (cx - 10, cy),
-        (cx + 2, cy - 10),
-        (cx + 2, cy + 10)
-    ]
-    pygame.draw.polygon(btn, color_flecha, puntos_triangulo)
+    surf.blit(sombra, (t_rect.x + 1, t_rect.y + 2))
+    surf.blit(txt_surf, t_rect)
 
-    # Cuerpo de la flecha
-    pygame.draw.rect(btn, color_flecha, (cx + 2, cy - 4, 10, 8))
-
-    return btn
+    return surf
