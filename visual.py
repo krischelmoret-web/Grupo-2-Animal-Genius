@@ -28,7 +28,6 @@ class RenderizadorJuego:
         self._imagen_actual_escalada = None
         self._bloques_rasca = []
         
-        # Cargar el logo que añadió tu compañero
         self.surf_logo = self.recursos.cargar_logo(ancho=450, alto=220)
 
     def _inicializar_rectangulos(self) -> None:
@@ -104,14 +103,12 @@ class RenderizadorJuego:
             )
 
     def dibujar_menu_principal(self, pantalla) -> None:
-        # Fondo del menú principal integrado
         fondo = self.recursos.fondos.get("menu_principal")
         if fondo:
             pantalla.blit(fondo, (0, 0))
         else:
             pantalla.fill((230, 240, 250))
                 
-        # Logo integrado o texto alternativo
         if self.surf_logo:
             rect_logo = self.surf_logo.get_rect(center=(const.ANCHO_PANTALLA // 2, 220))
             pantalla.blit(self.surf_logo, rect_logo)
