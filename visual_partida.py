@@ -64,14 +64,13 @@ def dibujar_interfaz(v, pantalla, carta_actual, puntuacion: int, mensaje: str, r
         x_t, y_t = (const.ANCHO_PANTALLA // 2) - (ancho_t // 2), 438
         es_acierto = "Correcto" in mensaje or "bien" in mensaje.lower()
         color_borde = (46, 125, 50) if es_acierto else (211, 47, 47)
-        icono = "✔ " if es_acierto else "✖ "
 
         surf_toast = pygame.Surface((ancho_t, alto_t), pygame.SRCALPHA)
         pygame.draw.rect(surf_toast, (0, 0, 0, 35), (0, 4, ancho_t, alto_t), border_radius=24)
         pygame.draw.rect(surf_toast, (255, 255, 255, 245), (0, 0, ancho_t, alto_t), border_radius=24)
         pygame.draw.rect(surf_toast, color_borde, (0, 0, ancho_t, alto_t), width=3, border_radius=24)
 
-        txt_msg = v.fuente_titulo.render(icono + mensaje, True, color_borde)
+        txt_msg = v.fuente_titulo.render(mensaje, True, color_borde)
         surf_toast.blit(txt_msg, txt_msg.get_rect(center=(ancho_t // 2, alto_t // 2)))
         pantalla.blit(surf_toast, (x_t, y_t))
 
@@ -107,14 +106,13 @@ def dibujar_ronda_sino(v, pantalla, pregunta_actual, puntuacion: int, mensaje: s
         x_t, y_t = (const.ANCHO_PANTALLA // 2) - (ancho_t // 2), 390
         es_acierto = "Correcto" in mensaje or "bien" in mensaje.lower()
         color_borde = (46, 125, 50) if es_acierto else (211, 47, 47)
-        icono = "✔ " if es_acierto else "✖ "
 
         surf_toast = pygame.Surface((ancho_t, alto_t), pygame.SRCALPHA)
         pygame.draw.rect(surf_toast, (0, 0, 0, 35), (0, 4, ancho_t, alto_t), border_radius=24)
         pygame.draw.rect(surf_toast, (255, 255, 255, 245), (0, 0, ancho_t, alto_t), border_radius=24)
         pygame.draw.rect(surf_toast, color_borde, (0, 0, ancho_t, alto_t), width=3, border_radius=24)
 
-        txt_msg = v.fuente_titulo.render(icono + mensaje, True, color_borde)
+        txt_msg = v.fuente_titulo.render(mensaje, True, color_borde)
         surf_toast.blit(txt_msg, txt_msg.get_rect(center=(ancho_t // 2, alto_t // 2)))
         pantalla.blit(surf_toast, (x_t, y_t))
 
