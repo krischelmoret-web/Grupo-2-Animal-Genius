@@ -6,6 +6,7 @@ from ui_components import (
     crear_boton_glossy,
     dibujar_indicadores_progreso, 
     aplicar_marco_capsula,
+    crear_boton_volver,
 )
 
 
@@ -26,6 +27,8 @@ class RenderizadorJuego:
         self._ultima_carta_procesada = None
         self._imagen_actual_escalada = None
         self._bloques_rasca = []
+        
+        # Cargar el logo que añadió tu compañero
         self.surf_logo = self.recursos.cargar_logo(ancho=450, alto=220)
 
     def _inicializar_rectangulos(self) -> None:
@@ -84,6 +87,10 @@ class RenderizadorJuego:
         self.surf_btn_no = crear_boton_glossy("NO", self.fuente_titulo, 180, 70, (240, 65, 65), (150, 20, 20))
         self.surf_btn_reiniciar = crear_boton_glossy("Volver al Menú", self.fuente_texto, 320, 60, (85, 165, 255), (20, 65, 175))
 
+        # Botón Volver estándar para menús
+        self.surf_btn_volver = crear_boton_volver(self.fuente_texto)
+        self.rect_btn_volver = self.surf_btn_volver.get_rect(topleft=(20, 20))
+
     def _inicializar_badges_biomas(self) -> None:
         nombres_amigables = {
             "artico": "Ártico", "oceano": "Océano", "pradera": "Pradera",
@@ -97,12 +104,14 @@ class RenderizadorJuego:
             )
 
     def dibujar_menu_principal(self, pantalla) -> None:
+        # Fondo del menú principal integrado
         fondo = self.recursos.fondos.get("menu_principal")
         if fondo:
             pantalla.blit(fondo, (0, 0))
         else:
             pantalla.fill((230, 240, 250))
                 
+        # Logo integrado o texto alternativo
         if self.surf_logo:
             rect_logo = self.surf_logo.get_rect(center=(const.ANCHO_PANTALLA // 2, 220))
             pantalla.blit(self.surf_logo, rect_logo)
@@ -111,7 +120,7 @@ class RenderizadorJuego:
             pantalla.blit(titulo, titulo.get_rect(center=(const.ANCHO_PANTALLA // 2, 220)))
                 
         pantalla.blit(self.surf_btn_jugar, self.rect_btn_jugar)
-        
+
     def obtener_clic_menu_principal(self, pos_mouse: tuple[int, int]) -> bool:
         return self.rect_btn_jugar.collidepoint(pos_mouse)
 
@@ -144,6 +153,9 @@ class RenderizadorJuego:
             badge = self.badges_zonas[zona]
             pantalla.blit(badge, badge.get_rect(center=(cx, cy + r - 10)))
 
+        # Dibujar botón Volver en la esquina superior izquierda
+        pantalla.blit(self.surf_btn_volver, self.rect_btn_volver)
+
     def obtener_clic_zona(self, pos_mouse: tuple[int, int]) -> str | None:
         x_mouse, y_mouse = pos_mouse
         for zona, datos in self.zonas_circulos.items():
@@ -162,11 +174,18 @@ class RenderizadorJuego:
         for modo, rect in self.rects_modos.items():
             pantalla.blit(self.surfs_btn_modos[modo], rect)
 
+        # Dibujar botón Volver en la esquina superior izquierda
+        pantalla.blit(self.surf_btn_volver, self.rect_btn_volver)
+
     def obtener_clic_menu_modos(self, pos_mouse: tuple[int, int]) -> str | None:
         for modo, rect in self.rects_modos.items():
             if rect.collidepoint(pos_mouse):
                 return modo
         return None
+
+    def obtener_clic_boton_volver(self, pos_mouse: tuple[int, int]) -> bool:
+        """Verifica si se hizo clic en el botón Volver de la esquina superior izquierda."""
+        return self.rect_btn_volver.collidepoint(pos_mouse)
 
     def _inicializar_grilla_rasca(self) -> None:
         self._bloques_rasca = []
@@ -196,7 +215,6 @@ class RenderizadorJuego:
         pantalla.blit(fondo, (0, 0)) if fondo else pantalla.fill((240, 240, 240))
 
         if carta_actual:
-            # Se compara por el string 'nombre_imagen' para evitar fallos de objeto
             if self._ultima_carta_procesada != carta_actual.nombre_imagen or (modo == "rasca" and not self._bloques_rasca):
                 self._opciones_actuales = carta_actual.obtener_opciones_mezcladas()
                 self._ultima_carta_procesada = carta_actual.nombre_imagen
@@ -218,7 +236,6 @@ class RenderizadorJuego:
         pos_x = (pantalla.get_width() // 2) - 220
         pos_y = 225 - 155
 
-        # Renderizar la imagen con marco cápsula
         if self._imagen_actual_escalada:
             if modo == "rasca":
                 pantalla.blit(self._imagen_actual_escalada, (pos_x, pos_y))
@@ -232,14 +249,12 @@ class RenderizadorJuego:
         else:
             pygame.draw.rect(pantalla, (220, 220, 220), (pos_x, pos_y, 440, 310), border_radius=30)
 
-        # Renderizado del modo rasca
         if modo == "rasca":      
             for bloque in self._bloques_rasca:
                 pygame.draw.rect(pantalla, (150, 150, 150), bloque)
                 pygame.draw.rect(pantalla, (100, 100, 100), bloque, width=1)
             pygame.draw.rect(pantalla, (76, 175, 80), (pos_x, pos_y, 440, 310), width=4, border_radius=8)
 
-        # Renderizar los botones de opciones
         for i, rect in enumerate(self.rects_opciones):
             if i < len(self._surfaces_opciones_actuales):
                 pantalla.blit(self._surfaces_opciones_actuales[i], rect)
