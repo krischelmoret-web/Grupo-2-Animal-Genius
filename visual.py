@@ -5,7 +5,7 @@ from ui_components import (
     crear_etiqueta_glossy,
     crear_boton_glossy,
     dibujar_indicadores_progreso, 
-    crear_boton_volver,
+    crear_boton_capsula_volver,
 )
 import visual_menu
 import visual_partida
@@ -46,10 +46,10 @@ class RenderizadorJuego:
         self._es_respuesta_correcta = es_correcto
 
     def _inicializar_rectangulos(self) -> None:
-        self.rect_btn_jugar = pygame.Rect(const.ANCHO_PANTALLA // 2 - 150, 275, 300, 55)
-        self.rect_slider_musica = pygame.Rect(const.ANCHO_PANTALLA // 2 - 140, 365, 280, 22)
-        self.rect_slider_efectos = pygame.Rect(const.ANCHO_PANTALLA // 2 - 140, 445, 280, 22)
-        self.rect_btn_salir = pygame.Rect(const.ANCHO_PANTALLA // 2 - 150, 495, 300, 50)
+        self.rect_btn_jugar = pygame.Rect(const.ANCHO_PANTALLA // 2 - 150, 315, 300, 55)
+        self.rect_slider_musica = pygame.Rect(const.ANCHO_PANTALLA // 2 - 140, 405, 280, 22)
+        self.rect_slider_efectos = pygame.Rect(const.ANCHO_PANTALLA // 2 - 140, 485, 280, 22)
+        self.rect_btn_salir = pygame.Rect(const.ANCHO_PANTALLA // 2 - 150, 535, 300, 50)
 
         w_card, h_card = 190, 180
         espacio_x, espacio_y = 30, 20
@@ -57,7 +57,7 @@ class RenderizadorJuego:
         inicio_x_fila1 = (const.ANCHO_PANTALLA - ancho_fila1) // 2
         ancho_fila2 = (2 * w_card) + (1 * espacio_x)
         inicio_x_fila2 = (const.ANCHO_PANTALLA - ancho_fila2) // 2
-        y_fila1 = 150
+        y_fila1 = 130
         y_fila2 = y_fila1 + h_card + espacio_y
 
         self.rects_zonas_tarjetas = {
@@ -69,9 +69,9 @@ class RenderizadorJuego:
         }
 
         self.rects_modos = {
-            "normal": pygame.Rect(const.ANCHO_PANTALLA // 2 - 175, 230, 350, 60),
-            "preguntas": pygame.Rect(const.ANCHO_PANTALLA // 2 - 175, 310, 350, 60),
-            "rasca": pygame.Rect(const.ANCHO_PANTALLA // 2 - 175, 390, 350, 60),
+            "normal": pygame.Rect(const.ANCHO_PANTALLA // 2 - 175, 220, 350, 55),
+            "preguntas": pygame.Rect(const.ANCHO_PANTALLA // 2 - 175, 295, 350, 55),
+            "rasca": pygame.Rect(const.ANCHO_PANTALLA // 2 - 175, 370, 350, 55),
         }
 
         ancho_b, alto_b, espacio_x_op = 340, 52, 24
@@ -89,19 +89,22 @@ class RenderizadorJuego:
         self.rect_btn_no = pygame.Rect(const.ANCHO_PANTALLA // 2 + 20, 490, 180, 65)
         self.rect_btn_reiniciar = pygame.Rect(const.ANCHO_PANTALLA // 2 - 150, 465, 300, 60)
 
+        # Botón volver posicionado abajo al centro con espacio suficiente
+        ancho_v, alto_v = 180, 48
+        self.rect_btn_volver = pygame.Rect((const.ANCHO_PANTALLA - ancho_v) // 2, 535, ancho_v, alto_v)
+
     def _inicializar_botones_estaticos(self) -> None:
-        self.surf_btn_jugar = crear_boton_glossy("JUGAR", self.fuente_titulo, 300, 55, (110, 220, 90), (35, 130, 45))
-        self.surf_btn_salir = crear_boton_glossy("SALIR", self.fuente_titulo, 300, 50, (240, 65, 65), (150, 20, 20))
+        self.surf_btn_jugar = crear_boton_glossy("Jugar", self.fuente_titulo, 300, 55, (110, 220, 90), (35, 130, 45))
+        self.surf_btn_salir = crear_boton_glossy("Salir", self.fuente_titulo, 300, 50, (240, 65, 65), (150, 20, 20))
         self.surfs_btn_modos = {
-            "normal": crear_boton_glossy("Modo Normal (Clásico)", self.fuente_texto, 350, 60, (85, 165, 255), (20, 65, 175)),
-            "preguntas": crear_boton_glossy("Modo Preguntas (Sí / No)", self.fuente_texto, 350, 60, (85, 165, 255), (20, 65, 175)),
-            "rasca": crear_boton_glossy("Modo Rasca y Gana", self.fuente_texto, 350, 60, (85, 165, 255), (20, 65, 175)),
+            "normal": crear_boton_glossy("Clásico", self.fuente_texto, 350, 55, (85, 165, 255), (20, 65, 175)),
+            "preguntas": crear_boton_glossy("¿Sí o No?", self.fuente_texto, 350, 55, (85, 165, 255), (20, 65, 175)),
+            "rasca": crear_boton_glossy("Rasca y mira", self.fuente_texto, 350, 55, (85, 165, 255), (20, 65, 175)),
         }
-        self.surf_btn_si = crear_boton_glossy("SÍ", self.fuente_titulo, 180, 65, (110, 220, 90), (35, 130, 45))
-        self.surf_btn_no = crear_boton_glossy("NO", self.fuente_titulo, 180, 65, (240, 65, 65), (150, 20, 20))
-        self.surf_btn_reiniciar = crear_boton_glossy("Volver al Menú", self.fuente_texto, 300, 60, (85, 165, 255), (20, 65, 175))
-        self.surf_btn_volver = crear_boton_volver(self.fuente_titulo, radio=26)
-        self.rect_btn_volver = self.surf_btn_volver.get_rect(topleft=(25, 25))
+        self.surf_btn_si = crear_boton_glossy("Sí", self.fuente_titulo, 180, 65, (110, 220, 90), (35, 130, 45))
+        self.surf_btn_no = crear_boton_glossy("No", self.fuente_titulo, 180, 65, (240, 65, 65), (150, 20, 20))
+        self.surf_btn_reiniciar = crear_boton_glossy("Volver al menú", self.fuente_texto, 300, 60, (85, 165, 255), (20, 65, 175))
+        self.surf_btn_volver = crear_boton_capsula_volver("< Volver", self.fuente_texto, ancho=180, alto=48)
 
     def _inicializar_badges_biomas(self) -> None:
         nombres_amigables = {"artico": "Ártico", "oceano": "Océano", "pradera": "Pradera", "selva": "Selva", "bosque": "Bosque"}
@@ -174,10 +177,10 @@ class RenderizadorJuego:
         pos_mouse = pygame.mouse.get_pos()
         fondo = self.recursos.fondos.get("modos")
         pantalla.blit(fondo, (0, 0)) if fondo else pantalla.fill((230, 240, 250))
-        self._dibujar_letrero_titulo(pantalla, "Selecciona un Modo de Juego", y_centro=90, ancho=480)
+        self._dibujar_letrero_titulo(pantalla, "¡Selecciona un modo de juego!", y_centro=80, ancho=480)
 
-        ancho_p, alto_p = 440, 310
-        x_p, y_p = (const.ANCHO_PANTALLA // 2) - (ancho_p // 2), 180
+        ancho_p, alto_p = 440, 280
+        x_p, y_p = (const.ANCHO_PANTALLA // 2) - (ancho_p // 2), 170
         surf_panel = pygame.Surface((ancho_p, alto_p), pygame.SRCALPHA)
         pygame.draw.rect(surf_panel, (0, 0, 0, 35), (0, 6, ancho_p, alto_p), border_radius=25)
         pygame.draw.rect(surf_panel, (255, 255, 255, 215), (0, 0, ancho_p, alto_p), border_radius=25)
